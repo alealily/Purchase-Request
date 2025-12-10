@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+.img-logo {
+  max-width: 150px !important;
+}
+
+select option:hover {
+  background-color: #187FC4 !important;
+  color: white !important;
+}
+
+.font-protest-riot {
+    font-family: 'Protest Riot', sans-serif;
+}
+
+/* Dialog/Modal Global Styles */
+dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  border: none;
+}
+
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.4);
+}
