@@ -17,7 +17,6 @@ class PurchaseRequest extends Model
         'id_user',
         'id_supplier',
         'pr_number',
-        'created_at',
         'status',
     ];
     protected $guarded = ['id_pr'];

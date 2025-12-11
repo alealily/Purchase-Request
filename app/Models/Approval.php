@@ -15,12 +15,13 @@ class Approval extends Model
     protected $fillable = [
         'id_pr',
         'id_user',
+        'level',
         'approval_status',
         'approval_date',
         'remarks',
     ];
     protected $guarded = ['id_approval'];
-    public $timestamps = false;
+    public $timestamps = true; // Enable for created_at and updated_at
 
     public function purchaseRequest():BelongsTo
     {

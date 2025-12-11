@@ -55,24 +55,35 @@
                     </h1>
                 </div>
 
-                <form id="loginForm" class="space-y-4">
+                <form action="{{ route('login.store') }}" method="POST" id="loginForm" class="space-y-4">
+                    @csrf
+                    
+                    {{-- Error Messages --}}
+                    @if($errors->any())
+                        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                            @foreach($errors->all() as $error)
+                                <p class="text-sm">{{ $error }}</p>
+                            @endforeach
+                        </div>
+                    @endif
+
                     <div> <label for="roleInput" class="block text-sm font-semibold text-gray-700">Role</label> <input
-                            type="text" id="roleInput" placeholder="Choose your role..."
+                            type="text" id="roleInput" placeholder="Choose your role..." name="role"
                             class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
                             readonly> </div>
-                    <div> <label for="usernameInput" class="block text-sm font-semibold text-gray-700">Username</label>
-                        <div class="relative mt-1"> <input type="text" id="usernameInput"
-                                placeholder="Enter your username"
-                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 pr-10">
+                    <div> <label for="emailInput" class="block text-sm font-semibold text-gray-700">Email</label>
+                        <div class="relative mt-1"> <input type="email" id="emailInput" name="email" value="{{ old('email') }}"
+                                placeholder="Enter your email"
+                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 pr-10" required>
                             <span class="absolute inset-y-0 right-0 flex items-center pr-5"> <i
                                     class="fa-solid fa-user text-gray-400"></i> </span>
                         </div>
                     </div>
                     <div> <label for="passwordInput" class="block text-sm font-semibold text-gray-700">Kata
                             Sandi</label>
-                        <div class="relative mt-1"> <input type="password" id="passwordInput"
+                        <div class="relative mt-1"> <input type="password" id="passwordInput" name="password"
                                 placeholder="Enter your password"
-                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 pr-10">
+                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 pr-10" required>
                             <span class="absolute inset-y-0 right-0 flex items-center pr-5" accesskey=""> <i
                                     class="fa-solid fa-lock text-gray-400"></i> </span>
                         </div>
@@ -215,20 +226,19 @@
                 });
             });
 
+            // Form validation only, let it submit to backend naturally
             loginForm.addEventListener('submit', function (e) {
-                e.preventDefault(); // cegah reload form
-
-                const username = document.getElementById('usernameInput').value.trim();
+                const email = document.getElementById('emailInput').value.trim();
                 const password = document.getElementById('passwordInput').value.trim();
                 const role = document.getElementById('roleInput').value.trim();
 
-                if (!username || !password || !role) {
+                if (!email || !password || !role) {
+                    e.preventDefault();
                     alert('Silakan isi semua kolom dan pilih role terlebih dahulu.');
-                    return;
+                    return false;
                 }
-
-                // Redirect ke halaman dashboard (ganti sesuai route Laravel kamu)
-                window.location.href = "/dashboard";
+                
+                // Let form submit to backend
             });
         });
 
