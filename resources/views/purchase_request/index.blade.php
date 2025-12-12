@@ -2,9 +2,20 @@
 
 @section('content')
     <div class="flex bg-[#F4F5FA] min-h-screen">
-        {{-- Sidebar --}}
+        {{-- Sidebar (dynamic based on role) --}}
+        @php
+            $userRole = strtolower(auth()->user()->role ?? '');
+            $superiorRoles = ['superior', 'head of department', 'head of division', 'president director'];
+            $isSuperior = in_array($userRole, $superiorRoles);
+        @endphp
         <aside class="w-64 bg-white h-screen sticky top-0">
-            @include('components.it_sidebar')
+            @if($userRole === 'it')
+                @include('components.it_sidebar')
+            @elseif($isSuperior)
+                @include('components.superior_sidebar')
+            @else
+                @include('components.employee_sidebar')
+            @endif
         </aside>
 
         <div class="flex-1 p-10 overflow-hidden">
@@ -15,37 +26,7 @@
                     <i id="profileIconBtn"
                         class="fa-solid fa-user cursor-pointer text-xl hover:opacity-80 transition-opacity relative"></i>
 
-                    <div id="profileModal" class="hidden absolute top-[calc(100%_+_10px)] right-0 
-                       bg-white rounded-2xl shadow-xl w-90 z-50 border border-gray-200">
-
-                        <div class="p-6">
-                            <div class="flex items-center gap-4">
-                                <div class="flex-shrink-0">
-                                    <div class="w-12 h-12 bg-white rounded-full 
-                                            border-2 border-gray-300 relative">
-                                        <i class="fa-solid fa-user text-gray-500 text-xl
-                                              absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-bold text-gray-900 truncate">
-                                        Abyan Adhiatma
-                                    </p>
-                                    <p class="text-sm text-gray-500 truncate">
-                                        abyan.adhiatma@siix-global.com
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="mt-5">
-                                <a href="{{ route('login') }}" class="block w-full text-center bg-[#187FC4] text-white 
-                                      font-bold py-2.5 rounded-lg 
-                                      hover:bg-[#156ca7] transition-colors">
-                                    LOGOUT
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    @include('components.modal_profile')
                 </div>
             </div>
 
@@ -65,10 +46,10 @@
                             class="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm font-medium">
                             <i class="fa-solid fa-file-export"></i> Export
                         </button>
-                        <button id="addBtn"
+                        <a href="{{ route('purchase_request.create') }}"
                             class="px-5 py-2 bg-[#187FC4] text-white rounded-lg hover:bg-[#156ca7] text-sm font-semibold cursor-pointer">
                             Add Purchase Request
-                        </button>
+                        </a>
                     </div>
                 </div>
 
@@ -91,247 +72,109 @@
                             </tr>
                         </thead>
                         <tbody id="tableBody">
-                            {{-- Row 1: Pending - Can Edit --}}
-                            <tr class="hover:bg-gray-50" data-pr-number="1000020405" data-status="Pending">
-                                <td class="px-4 py-2">1000020405</td>
-                                <td class="px-4 py-2"><span class="bg-[#FFEEB7] text-[#FF8110] rounded-full px-3 py-1 text-xs font-semibold">Pending</span></td>
-                                <td class="px-4 py-2">Klip Binder</td>
-                                <td class="px-4 py-2">PCS</td>
-                                <td class="px-4 py-2">5,000</td>
-                                <td class="px-4 py-2">RP</td>
-                                <td class="px-4 py-2">5</td>
-                                <td class="px-4 py-2">25,000</td>
-                                <td class="px-4 py-2">25-09-2024</td>
-                                <td class="px-4 py-2">CBR Elektronik</td>
-                                <td class="px-4 py-2"><a href="{{ url('/storage/quotations/quotation1.pdf') }}" target="_blank" class="text-blue-600 hover:underline">Quotation_KlipBinder.pdf</a></td>
-                                <td class="px-4 py-2">
-                                    <div class="flex items-center gap-2">
-                                        <button class="bg-[#B6FDF4] text-[#15ADA5] viewBtn p-2 rounded-lg cursor-pointer hover:bg-[#66FFEC]"><i class="fa-solid fa-eye"></i></button>
-                                        <button class="bg-[#FFEEB7] text-[#FF8110] editBtn p-2 rounded-lg cursor-pointer hover:bg-[#FBD65E]"><i class="fa-solid fa-pen-to-square"></i></button>
-                                        <button class="bg-[#FFB3BA] text-[#E20030] deleteBtn p-2 rounded-lg cursor-pointer hover:bg-[#FF7C88]"><i class="fa-solid fa-trash-can"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            {{-- Row 2: Approve - Cannot Edit --}}
-                            <tr class="hover:bg-gray-50" data-pr-number="1000020406" data-status="Approve">
-                                <td class="px-4 py-2">1000020406</td>
-                                <td class="px-4 py-2"><span class="bg-[#B7FCC9] text-[#0A7D0C] rounded-full px-3 py-1 text-xs font-semibold">Approve</span></td>
-                                <td class="px-4 py-2">Laptop Lenovo ThinkPad</td>
-                                <td class="px-4 py-2">PCS</td>
-                                <td class="px-4 py-2">12,500,000</td>
-                                <td class="px-4 py-2">RP</td>
-                                <td class="px-4 py-2">2</td>
-                                <td class="px-4 py-2">25,000,000</td>
-                                <td class="px-4 py-2">20-09-2024</td>
-                                <td class="px-4 py-2">Batam Supplier</td>
-                                <td class="px-4 py-2"><a href="{{ url('/storage/quotations/quotation2.pdf') }}" target="_blank" class="text-blue-600 hover:underline">Quotation_Laptop.pdf</a></td>
-                                <td class="px-4 py-2">
-                                    <div class="flex items-center gap-2">
-                                        <button class="bg-[#B6FDF4] text-[#15ADA5] viewBtn p-2 rounded-lg cursor-pointer hover:bg-[#66FFEC]"><i class="fa-solid fa-eye"></i></button>
-                                        <button class="bg-[#FFEEB7] text-[#FF8110] editBtn p-2 rounded-lg cursor-pointer hover:bg-[#FBD65E]"><i class="fa-solid fa-pen-to-square"></i></button>
-                                        <button class="bg-[#FFB3BA] text-[#E20030] deleteBtn p-2 rounded-lg cursor-pointer hover:bg-[#FF7C88]"><i class="fa-solid fa-trash-can"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            {{-- Row 3: Pending - Can Edit --}}
-                            <tr class="hover:bg-gray-50" data-pr-number="1000020407" data-status="Pending">
-                                <td class="px-4 py-2">1000020407</td>
-                                <td class="px-4 py-2"><span class="bg-[#FFEEB7] text-[#FF8110] rounded-full px-3 py-1 text-xs font-semibold">Pending</span></td>
-                                <td class="px-4 py-2">Meja Kantor</td>
-                                <td class="px-4 py-2">PCS</td>
-                                <td class="px-4 py-2">1,500,000</td>
-                                <td class="px-4 py-2">RP</td>
-                                <td class="px-4 py-2">10</td>
-                                <td class="px-4 py-2">15,000,000</td>
-                                <td class="px-4 py-2">18-09-2024</td>
-                                <td class="px-4 py-2">PT Furnitur Jaya</td>
-                                <td class="px-4 py-2"><a href="{{ url('/storage/quotations/quotation3.pdf') }}" target="_blank" class="text-blue-600 hover:underline">Quotation_Meja.pdf</a></td>
-                                <td class="px-4 py-2">
-                                    <div class="flex items-center gap-2">
-                                        <button class="bg-[#B6FDF4] text-[#15ADA5] viewBtn p-2 rounded-lg cursor-pointer hover:bg-[#66FFEC]"><i class="fa-solid fa-eye"></i></button>
-                                        <button class="bg-[#FFEEB7] text-[#FF8110] editBtn p-2 rounded-lg cursor-pointer hover:bg-[#FBD65E]"><i class="fa-solid fa-pen-to-square"></i></button>
-                                        <button class="bg-[#FFB3BA] text-[#E20030] deleteBtn p-2 rounded-lg cursor-pointer hover:bg-[#FF7C88]"><i class="fa-solid fa-trash-can"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            {{-- Row 4: Reject - Cannot Edit --}}
-                            <tr class="hover:bg-gray-50" data-pr-number="1000020408" data-status="Reject">
-                                <td class="px-4 py-2">1000020408</td>
-                                <td class="px-4 py-2"><span class="bg-[#FFB3BA] text-[#E20030] rounded-full px-3 py-1 text-xs font-semibold">Reject</span></td>
-                                <td class="px-4 py-2">Printer HP LaserJet</td>
-                                <td class="px-4 py-2">PCS</td>
-                                <td class="px-4 py-2">3,200,000</td>
-                                <td class="px-4 py-2">RP</td>
-                                <td class="px-4 py-2">1</td>
-                                <td class="px-4 py-2">3,200,000</td>
-                                <td class="px-4 py-2">15-09-2024</td>
-                                <td class="px-4 py-2">Toko Cipta Mandiri</td>
-                                <td class="px-4 py-2"><a href="{{ url('/storage/quotations/quotation4.pdf') }}" target="_blank" class="text-blue-600 hover:underline">Quotation_Printer.pdf</a></td>
-                                <td class="px-4 py-2">
-                                    <div class="flex items-center gap-2">
-                                        <button class="bg-[#B6FDF4] text-[#15ADA5] viewBtn p-2 rounded-lg cursor-pointer hover:bg-[#66FFEC]"><i class="fa-solid fa-eye"></i></button>
-                                        <button class="bg-[#FFEEB7] text-[#FF8110] editBtn p-2 rounded-lg cursor-pointer hover:bg-[#FBD65E]"><i class="fa-solid fa-pen-to-square"></i></button>
-                                        <button class="bg-[#FFB3BA] text-[#E20030] deleteBtn p-2 rounded-lg cursor-pointer hover:bg-[#FF7C88]"><i class="fa-solid fa-trash-can"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            {{-- Row 5: Revision - Cannot Edit --}}
-                            <tr class="hover:bg-gray-50" data-pr-number="1000020409" data-status="Revision">
-                                <td class="px-4 py-2">1000020409</td>
-                                <td class="px-4 py-2"><span class="bg-[#DFE0FF] text-[#0A0E8D] rounded-full px-3 py-1 text-xs font-semibold">Revision</span></td>
-                                <td class="px-4 py-2">Kursi Gaming</td>
-                                <td class="px-4 py-2">PCS</td>
-                                <td class="px-4 py-2">2,800,000</td>
-                                <td class="px-4 py-2">RP</td>
-                                <td class="px-4 py-2">3</td>
-                                <td class="px-4 py-2">8,400,000</td>
-                                <td class="px-4 py-2">12-09-2024</td>
-                                <td class="px-4 py-2">PT Furnitur Jaya</td>
-                                <td class="px-4 py-2"><a href="{{ url('/storage/quotations/quotation5.pdf') }}" target="_blank" class="text-blue-600 hover:underline">Quotation_Kursi.pdf</a></td>
-                                <td class="px-4 py-2">
-                                    <div class="flex items-center gap-2">
-                                        <button class="bg-[#B6FDF4] text-[#15ADA5] viewBtn p-2 rounded-lg cursor-pointer hover:bg-[#66FFEC]"><i class="fa-solid fa-eye"></i></button>
-                                        <button class="bg-[#FFEEB7] text-[#FF8110] editBtn p-2 rounded-lg cursor-pointer hover:bg-[#FBD65E]"><i class="fa-solid fa-pen-to-square"></i></button>
-                                        <button class="bg-[#FFB3BA] text-[#E20030] deleteBtn p-2 rounded-lg cursor-pointer hover:bg-[#FF7C88]"><i class="fa-solid fa-trash-can"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            {{-- Row 6: Revised - Cannot Edit --}}
-                            <tr class="hover:bg-gray-50" data-pr-number="1000020410" data-status="Revised">
-                                <td class="px-4 py-2">1000020410</td>
-                                <td class="px-4 py-2"><span class="bg-[#D9D9D9] text-[#6E6D6D] rounded-full px-3 py-1 text-xs font-semibold">Revised</span></td>
-                                <td class="px-4 py-2">Monitor LG 27 Inch</td>
-                                <td class="px-4 py-2">PCS</td>
-                                <td class="px-4 py-2">4,500,000</td>
-                                <td class="px-4 py-2">RP</td>
-                                <td class="px-4 py-2">5</td>
-                                <td class="px-4 py-2">22,500,000</td>
-                                <td class="px-4 py-2">10-09-2024</td>
-                                <td class="px-4 py-2">CV. Media Elektronik</td>
-                                <td class="px-4 py-2"><a href="{{ url('/storage/quotations/quotation6.pdf') }}" target="_blank" class="text-blue-600 hover:underline">Quotation_Monitor.pdf</a></td>
-                                <td class="px-4 py-2">
-                                    <div class="flex items-center gap-2">
-                                        <button class="bg-[#B6FDF4] text-[#15ADA5] viewBtn p-2 rounded-lg cursor-pointer hover:bg-[#66FFEC]"><i class="fa-solid fa-eye"></i></button>
-                                        <button class="bg-[#FFEEB7] text-[#FF8110] editBtn p-2 rounded-lg cursor-pointer hover:bg-[#FBD65E]"><i class="fa-solid fa-pen-to-square"></i></button>
-                                        <button class="bg-[#FFB3BA] text-[#E20030] deleteBtn p-2 rounded-lg cursor-pointer hover:bg-[#FF7C88]"><i class="fa-solid fa-trash-can"></i></button>
-                                    </div>
-                                </td>
-           </tr>
-
-                            {{-- Row 7: Approve - Cannot Edit --}}
-                            <tr class="hover:bg-gray-50" data-pr-number="1000020411" data-status="Approve">
-                                <td class="px-4 py-2">1000020411</td>
-                                <td class="px-4 py-2"><span class="bg-[#B7FCC9] text-[#0A7D0C] rounded-full px-3 py-1 text-xs font-semibold">Approve</span></td>
-                                <td class="px-4 py-2">Keyboard Mechanical</td>
-                                <td class="px-4 py-2">PCS</td>
-                                <td class="px-4 py-2">850,000</td>
-                                <td class="px-4 py-2">RP</td>
-                                <td class="px-4 py-2">15</td>
-                                <td class="px-4 py-2">12,750,000</td>
-                                <td class="px-4 py-2">08-09-2024</td>
-                                <td class="px-4 py-2">CBR Elektronik</td>
-                                <td class="px-4 py-2"><a href="{{ url('/storage/quotations/quotation7.pdf') }}" target="_blank" class="text-blue-600 hover:underline">Quotation_Keyboard.pdf</a></td>
-                                <td class="px-4 py-2">
-                                    <div class="flex items-center gap-2">
-                                        <button class="bg-[#B6FDF4] text-[#15ADA5] viewBtn p-2 rounded-lg cursor-pointer hover:bg-[#66FFEC]"><i class="fa-solid fa-eye"></i></button>
-                                        <button class="bg-[#FFEEB7] text-[#FF8110] editBtn p-2 rounded-lg cursor-pointer hover:bg-[#FBD65E]"><i class="fa-solid fa-pen-to-square"></i></button>
-                                        <button class="bg-[#FFB3BA] text-[#E20030] deleteBtn p-2 rounded-lg cursor-pointer hover:bg-[#FF7C88]"><i class="fa-solid fa-trash-can"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            {{-- Row 8: Pending - Can Edit --}}
-                            <tr class="hover:bg-gray-50" data-pr-number="1000020412" data-status="Pending">
-                                <td class="px-4 py-2">1000020412</td>
-                                <td class="px-4 py-2"><span class="bg-[#FFEEB7] text-[#FF8110] rounded-full px-3 py-1 text-xs font-semibold">Pending</span></td>
-                                <td class="px-4 py-2">Mouse Wireless</td>
-                                <td class="px-4 py-2">PCS</td>
-                                <td class="px-4 py-2">125,000</td>
-                                <td class="px-4 py-2">RP</td>
-                                <td class="px-4 py-2">20</td>
-                                <td class="px-4 py-2">2,500,000</td>
-                                <td class="px-4 py-2">05-09-2024</td>
-                                <td class="px-4 py-2">Toko Cipta Mandiri</td>
-                                <td class="px-4 py-2"><a href="{{ url('/storage/quotations/quotation8.pdf') }}" target="_blank" class="text-blue-600 hover:underline">Quotation_Mouse.pdf</a></td>
-                                <td class="px-4 py-2">
-                                    <div class="flex items-center gap-2">
-                                        <button class="bg-[#B6FDF4] text-[#15ADA5] viewBtn p-2 rounded-lg cursor-pointer hover:bg-[#66FFEC]"><i class="fa-solid fa-eye"></i></button>
-                                        <button class="bg-[#FFEEB7] text-[#FF8110] editBtn p-2 rounded-lg cursor-pointer hover:bg-[#FBD65E]"><i class="fa-solid fa-pen-to-square"></i></button>
-                                        <button class="bg-[#FFB3BA] text-[#E20030] deleteBtn p-2 rounded-lg cursor-pointer hover:bg-[#FF7C88]"><i class="fa-solid fa-trash-can"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            {{-- Row 9: Reject - Cannot Edit --}}
-                            <tr class="hover:bg-gray-50" data-pr-number="1000020413" data-status="Reject">
-                                <td class="px-4 py-2">1000020413</td>
-                                <td class="px-4 py-2"><span class="bg-[#FFB3BA] text-[#E20030] rounded-full px-3 py-1 text-xs font-semibold">Reject</span></td>
-                                <td class="px-4 py-2">Webcam Logitech</td>
-                                <td class="px-4 py-2">PCS</td>
-                                <td class="px-4 py-2">1,200,000</td>
-                                <td class="px-4 py-2">RP</td>
-                                <td class="px-4 py-2">8</td>
-                                <td class="px-4 py-2">9,600,000</td>
-                                <td class="px-4 py-2">03-09-2024</td>
-                                <td class="px-4 py-2">Batam Supplier</td>
-                                <td class="px-4 py-2"><a href="{{ url('/storage/quotations/quotation9.pdf') }}" target="_blank" class="text-blue-600 hover:underline">Quotation_Webcam.pdf</a></td>
-                                <td class="px-4 py-2">
-                                    <div class="flex items-center gap-2">
-                                        <button class="bg-[#B6FDF4] text-[#15ADA5] viewBtn p-2 rounded-lg cursor-pointer hover:bg-[#66FFEC]"><i class="fa-solid fa-eye"></i></button>
-                                        <button class="bg-[#FFEEB7] text-[#FF8110] editBtn p-2 rounded-lg cursor-pointer hover:bg-[#FBD65E]"><i class="fa-solid fa-pen-to-square"></i></button>
-                                        <button class="bg-[#FFB3BA] text-[#E20030] deleteBtn p-2 rounded-lg cursor-pointer hover:bg-[#FF7C88]"><i class="fa-solid fa-trash-can"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            {{-- Row 10: Revision - Cannot Edit --}}
-                            <tr class="hover:bg-gray-50" data-pr-number="1000020414" data-status="Revision">
-                                <td class="px-4 py-2">1000020414</td>
-                                <td class="px-4 py-2"><span class="bg-[#DFE0FF] text-[#0A0E8D] rounded-full px-3 py-1 text-xs font-semibold">Revision</span></td>
-                                <td class="px-4 py-2">UPS 1000VA</td>
-                                <td class="px-4 py-2">PCS</td>
-                                <td class="px-4 py-2">1,800,000</td>
-                                <td class="px-4 py-2">RP</td>
-                                <td class="px-4 py-2">6</td>
-                                <td class="px-4 py-2">10,800,000</td>
-                                <td class="px-4 py-2">01-09-2024</td>
-                                <td class="px-4 py-2">CV. Media Elektronik</td>
-                                <td class="px-4 py-2"><a href="{{ url('/storage/quotations/quotation10.pdf') }}" target="_blank" class="text-blue-600 hover:underline">Quotation_UPS.pdf</a></td>
-                                <td class="px-4 py-2">
-                                    <div class="flex items-center gap-2">
-                                        <button class="bg-[#B6FDF4] text-[#15ADA5] viewBtn p-2 rounded-lg cursor-pointer hover:bg-[#66FFEC]"><i class="fa-solid fa-eye"></i></button>
-                                        <button class="bg-[#FFEEB7] text-[#FF8110] editBtn p-2 rounded-lg cursor-pointer hover:bg-[#FBD65E]"><i class="fa-solid fa-pen-to-square"></i></button>
-                                        <button class="bg-[#FFB3BA] text-[#E20030] deleteBtn p-2 rounded-lg cursor-pointer hover:bg-[#FF7C88]"><i class="fa-solid fa-trash-can"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            {{-- Row 11: Revised - Cannot Edit --}}
-                            <tr class="hover:bg-gray-50" data-pr-number="1000020415" data-status="Revised">
-                                <td class="px-4 py-2">1000020415</td>
-                                <td class="px-4 py-2"><span class="bg-[#D9D9D9] text-[#6E6D6D] rounded-full px-3 py-1 text-xs font-semibold">Revised</span></td>
-                                <td class="px-4 py-2">Headset Noise Cancelling</td>
-                                <td class="px-4 py-2">PCS</td>
-                                <td class="px-4 py-2">650,000</td>
-                                <td class="px-4 py-2">RP</td>
-                                <td class="px-4 py-2">12</td>
-                                <td class="px-4 py-2">7,800,000</td>
-                                <td class="px-4 py-2">28-08-2024</td>
-                                <td class="px-4 py-2">CBR Elektronik</td>
-                                <td class="px-4 py-2"><a href="{{ url('/storage/quotations/quotation11.pdf') }}" target="_blank" class="text-blue-600 hover:underline">Quotation_Headset.pdf</a></td>
-                                <td class="px-4 py-2">
-                                    <div class="flex items-center gap-2">
-                                        <button class="bg-[#B6FDF4] text-[#15ADA5] viewBtn p-2 rounded-lg cursor-pointer hover:bg-[#66FFEC]"><i class="fa-solid fa-eye"></i></button>
-                                        <button class="bg-[#FFEEB7] text-[#FF8110] editBtn p-2 rounded-lg cursor-pointer hover:bg-[#FBD65E]"><i class="fa-solid fa-pen-to-square"></i></button>
-                                        <button class="bg-[#FFB3BA] text-[#E20030] deleteBtn p-2 rounded-lg cursor-pointer hover:bg-[#FF7C88]"><i class="fa-solid fa-trash-can"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
+                            @forelse($pr as $purchase)
+                                @php
+                                    $detail = $purchase->prDetails;
+                                    $status = ucfirst($purchase->status ?? 'pending');
+                                    
+                                    // Status badge colors
+                                    $statusColors = [
+                                        'Pending' => 'bg-[#FFEEB7] text-[#FF8110]',
+                                        'Approve' => 'bg-[#B7FCC9] text-[#0A7D0C]',
+                                        'Approved' => 'bg-[#B7FCC9] text-[#0A7D0C]',
+                                        'Reject' => 'bg-[#FFB3BA] text-[#E20030]',
+                                        'Rejected' => 'bg-[#FFB3BA] text-[#E20030]',
+                                        'Revision' => 'bg-[#DFE0FF] text-[#0A0E8D]',
+                                        'Revised' => 'bg-[#D9D9D9] text-[#6E6D6D]',
+                                    ];
+                                    $badgeClass = $statusColors[$status] ?? 'bg-gray-200 text-gray-800';
+                                    
+                                    // Check if editable (only pending and revision can be edited)
+                                    $isEditable = in_array(strtolower($purchase->status), ['pending', 'revision']);
+                                @endphp
+                                <tr class="hover:bg-gray-50" data-pr-id="{{ $purchase->id_pr }}" data-pr-number="{{ $purchase->pr_number }}" data-status="{{ $status }}">
+                                    <td class="px-4 py-2">{{ $purchase->pr_number }}</td>
+                                    <td class="px-4 py-2">
+                                        <span class="{{ $badgeClass }} rounded-full px-3 py-1 text-xs font-semibold">{{ $status }}</span>
+                                    </td>
+                                    <td class="px-4 py-2">{{ $detail->material_desc ?? '-' }}</td>
+                                    <td class="px-4 py-2">{{ $detail->uom ?? 'PCS' }}</td>
+                                    <td class="px-4 py-2">{{ number_format($detail->unit_price ?? 0, 0, ',', '.') }}</td>
+                                    <td class="px-4 py-2">{{ $detail->currency_code ?? 'RP' }}</td>
+                                    <td class="px-4 py-2">{{ $detail->quantity ?? 0 }}</td>
+                                    <td class="px-4 py-2">{{ number_format($detail->total_cost ?? 0, 0, ',', '.') }}</td>
+                                    <td class="px-4 py-2">{{ $purchase->created_at ? $purchase->created_at->format('d-m-Y') : '-' }}</td>
+                                    <td class="px-4 py-2">{{ $detail->supplier->name ?? '-' }}</td>
+                                    <td class="px-4 py-2">
+                                        @if($detail && $detail->quotation_file)
+                                            @php
+                                                // Try to decode as JSON (multiple files)
+                                                $files = json_decode($detail->quotation_file, true);
+                                                if (!is_array($files)) {
+                                                    // Single file (backward compatible)
+                                                    $files = [$detail->quotation_file];
+                                                }
+                                            @endphp
+                                            <div class="flex flex-col gap-1">
+                                                @foreach($files as $index => $filename)
+                                                    <a href="{{ url('/storage/quotations/' . $filename) }}" 
+                                                       target="_blank" 
+                                                       class="text-blue-600 hover:underline text-xs">
+                                                        <i class="fa-solid fa-file-pdf mr-1"></i>{{ Str::limit($filename, 20) }}
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <div class="flex items-center gap-2">
+                                            <a href="{{ route('purchase_request.show', $purchase->id_pr) }}" 
+                                               class="bg-[#B6FDF4] text-[#15ADA5] viewBtn p-2 rounded-lg cursor-pointer hover:bg-[#66FFEC]">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
+                                            @if($isEditable)
+                                                <a href="{{ route('purchase_request.edit', $purchase->id_pr) }}" 
+                                                   class="bg-[#FFEEB7] text-[#FF8110] editBtn p-2 rounded-lg cursor-pointer hover:bg-[#FBD65E]">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                </a>
+                                                <form action="{{ route('purchase_request.destroy', $purchase->id_pr) }}" 
+                                                      method="POST" 
+                                                      class="inline"
+                                                      onsubmit="return confirm('Are you sure you want to delete this purchase request?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" 
+                                                            class="bg-[#FFB3BA] text-[#E20030] deleteBtn p-2 rounded-lg cursor-pointer hover:bg-[#FF7C88]">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <button class="bg-gray-200 text-gray-400 p-2 rounded-lg cursor-not-allowed" disabled>
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                </button>
+                                                <button class="bg-gray-200 text-gray-400 p-2 rounded-lg cursor-not-allowed" disabled>
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="12" class="px-4 py-8 text-center text-gray-500">
+                                        <div class="flex flex-col items-center gap-2">
+                                            <i class="fa-solid fa-inbox text-4xl text-gray-300"></i>
+                                            <p>No purchase requests found.</p>
+                                            <a href="{{ route('purchase_request.create') }}" 
+                                               class="text-[#187FC4] hover:underline font-semibold">
+                                                Create your first purchase request
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -574,7 +417,7 @@
             // ================== SEMUA MODAL & EVENT LISTENERS ==================
             const formModal = document.getElementById("formModal");
             const modalTitle = document.getElementById("modalTitle");
-            const addBtn = document.getElementById("addBtn");
+            // addBtn is now a link, not needed as JS element
             const saveForm = document.getElementById("saveForm");
             const materialInput = document.getElementById("materialInput");
             const unitPriceInput = document.getElementById("unitPriceInput");
@@ -605,14 +448,7 @@
             unitPriceInput.addEventListener('input', calculateTotalCost);
             quantityInput.addEventListener('input', calculateTotalCost);
 
-            addBtn.addEventListener('click', () => {
-                document.getElementById('purchaseForm').reset();
-                modalTitle.textContent = "Add Purchase Request";
-                editingPrNumberInput.value = "";
-                calculateTotalCost();
-                clearErrors();
-                formModal.showModal();
-            });
+            // addBtn is now a link, no listener needed
             document.querySelectorAll('.closeFormBtn').forEach(btn => btn.addEventListener('click', () => formModal.close()));
 
 
@@ -785,13 +621,32 @@
 
             filterBtn.addEventListener('click', () => filterModal.showModal());
             closeFilterBtn.addEventListener('click', () => filterModal.close());
-            // NOTE: Filter/search dinonaktifkan sementara untuk static HTML
+            
+            // Implement client-side filter
             applyFilter.addEventListener('click', () => { 
-                alert('Fitur filter akan diaktifkan setelah terintegrasi dengan backend API');
+                const statusFilter = document.querySelector('#filterModal select')?.value?.toLowerCase() || '';
+                const rows = tableBody.querySelectorAll('tr');
+                
+                rows.forEach(row => {
+                    if (row.querySelector('td[colspan]')) return; // Skip empty state
+                    
+                    const status = row.getAttribute('data-status')?.toLowerCase() || '';
+                    
+                    // Show/hide based on filter
+                    if (!statusFilter || status.includes(statusFilter.replace('reject', ''))) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                
                 filterModal.close(); 
             });
+            
             resetFilter.addEventListener('click', () => { 
                 document.getElementById("filterForm").reset(); 
+                // Show all rows
+                tableBody.querySelectorAll('tr').forEach(row => row.style.display = '');
                 filterModal.close(); 
             });
 
@@ -801,24 +656,29 @@
                 window.location.href = '{{ route("purchase_request.export") }}';
             });
 
-            const profileIconBtn = document.getElementById('profileIconBtn');
-            const profileModal = document.getElementById('profileModal');
+            // Profile popup is now handled by the modal_profile component
 
-            if (profileIconBtn && profileModal) {
-                profileIconBtn.addEventListener('click', function (event) {
-                    event.stopPropagation();
-                    profileModal.classList.toggle('hidden');
+            // Client-side search functionality
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                const rows = tableBody.querySelectorAll('tr');
+                
+                rows.forEach(row => {
+                    if (row.querySelector('td[colspan]')) return; // Skip empty state row
+                    
+                    const cells = row.querySelectorAll('td');
+                    let match = false;
+                    
+                    cells.forEach(cell => {
+                        if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                            match = true;
+                        }
+                    });
+                    
+                    row.style.display = match ? '' : 'none';
                 });
-
-                window.addEventListener('click', function (event) {
-                    if (!profileModal.contains(event.target) && event.target !== profileIconBtn) {
-                        profileModal.classList.add('hidden');
-                    }
-                });
-            }
-
-            // NOTE: Search tidak berfungsi untuk static  HTML, fitur ini akan dikembalikan saat integrasi API
-            // searchInput.addEventListener('input', renderTable);
+            });
         });
     </script>
 @endsection

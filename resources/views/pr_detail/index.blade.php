@@ -2,9 +2,20 @@
 
 @section('content')
     <div class="flex bg-[#F4F5FA] min-h-screen">
-        {{-- Sidebar --}}
+        {{-- Sidebar (dynamic based on role) --}}
+        @php
+            $userRole = strtolower(auth()->user()->role ?? '');
+            $superiorRoles = ['superior', 'head of department', 'head of division', 'president director'];
+            $isSuperior = in_array($userRole, $superiorRoles);
+        @endphp
         <aside class="w-64 bg-white h-screen sticky top-0">
-            @include('components.it_sidebar')
+            @if($userRole === 'it')
+                @include('components.it_sidebar')
+            @elseif($isSuperior)
+                @include('components.superior_sidebar')
+            @else
+                @include('components.employee_sidebar')
+            @endif
         </aside>
 
         {{-- Main content --}}
@@ -16,37 +27,7 @@
                     <i id="profileIconBtn"
                         class="fa-solid fa-user cursor-pointer text-xl hover:opacity-80 transition-opacity relative"></i>
 
-                    <div id="profileModal" class="hidden absolute top-[calc(100%_+_10px)] right-0 
-                       bg-white rounded-2xl shadow-xl w-90 z-50 border border-gray-200">
-
-                        <div class="p-6">
-                            <div class="flex items-center gap-4">
-                                <div class="flex-shrink-0">
-                                    <div class="w-12 h-12 bg-white rounded-full 
-                                            border-2 border-gray-300 relative">
-                                        <i class="fa-solid fa-user text-gray-500 text-xl
-                                              absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-bold text-gray-900 truncate">
-                                        Abyan Adhiatma
-                                    </p>
-                                    <p class="text-sm text-gray-500 truncate">
-                                        abyan.adhiatma@siix-global.com
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="mt-5">
-                                <a href="{{ route('login') }}" class="block w-full text-center bg-[#187FC4] text-white 
-                                      font-bold py-2.5 rounded-lg 
-                                      hover:bg-[#156ca7] transition-colors">
-                                    LOGOUT
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    @include('components.modal_profile')
                 </div>
             </div>
 
@@ -792,26 +773,7 @@
                 });
             });
 
-            const profileIconBtn = document.getElementById('profileIconBtn');
-            const profileModal = document.getElementById('profileModal');
-
-            // Cek jika elemennya ada di halaman ini
-            if (profileIconBtn && profileModal) {
-                
-                // 1. Tampilkan/Sembunyikan modal saat icon diklik
-                profileIconBtn.addEventListener('click', function (event) {
-                    event.stopPropagation(); // Mencegah event "klik di luar" terpicu
-                    profileModal.classList.toggle('hidden');
-                });
-
-                // 2. Sembunyikan modal saat klik di luar area modal
-                window.addEventListener('click', function (event) {
-                    // Cek jika yang diklik BUKAN modal DAN BUKAN icon
-                    if (!profileModal.contains(event.target) && event.target !== profileIconBtn) {
-                        profileModal.classList.add('hidden'); // Sembunyikan modal
-                    }
-                });
-            }
+            // Profile popup is now handled by the modal_profile component
         });
     </script>
 @endsection

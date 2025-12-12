@@ -49,7 +49,13 @@ class PurchaseRequestController extends Controller
             'unit_price' => 'required|numeric|min:0',
             'quantity' => 'required|integer|min:1',
             'id_supplier' => 'required|exists:supplier,id_supplier',
-            'quotation_file' => 'nullable|file|mimes:pdf,docx|max:10240', // 10MB max
+            'quotation_files' => 'required|array|max:3', // Max 3 files
+            'quotation_files.*' => 'file|mimes:pdf,doc,docx|max:10240', // 10MB max each
+        ], [
+            'quotation_files.required' => 'Please upload at least one quotation file.',
+            'quotation_files.max' => 'You can upload maximum 3 files.',
+            'quotation_files.*.mimes' => 'Only PDF and Word documents are allowed.',
+            'quotation_files.*.max' => 'Each file must not exceed 10MB.',
         ]);
 
         try {
@@ -65,14 +71,18 @@ class PurchaseRequestController extends Controller
                 'status' => 'pending',
             ]);
 
-            // Handle file upload
-            $quotationFile = null;
-            if ($request->hasFile('quotation_file')) {
-                $file = $request->file('quotation_file');
-                $filename = time() . '_' . $file->getClientOriginalName();
-                $file->storeAs('quotations', $filename, 'public');
-                $quotationFile = $filename;
+            // Handle multiple file uploads
+            $uploadedFiles = [];
+            if ($request->hasFile('quotation_files')) {
+                foreach ($request->file('quotation_files') as $file) {
+                    $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
+                    $file->storeAs('quotations', $filename, 'public');
+                    $uploadedFiles[] = $filename;
+                }
             }
+            
+            // Store as JSON if multiple files, or single filename
+            $quotationFile = count($uploadedFiles) > 0 ? json_encode($uploadedFiles) : null;
 
             // Create PR Detail
             $totalCost = $validated['unit_price'] * $validated['quantity'];

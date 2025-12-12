@@ -53,7 +53,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            // Note: password is NOT cast to 'hashed' because we store pre-hashed passwords
         ];
     }
 

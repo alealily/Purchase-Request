@@ -13,14 +13,14 @@
         <a href="{{ route('dashboard.index') }}"
            class="flex items-center gap-3 py-3 px-4 rounded-lg font-semibold
            {{ request()->routeIs('dashboard.index') ? 'bg-[#187FC4] text-white' : 'text-black hover:bg-gray-100' }}">
-            <i class="fi fi-sr-grid"></i>
+            <i class="fi fi-sr-apps"></i>
             Dashboard
         </a>
 
         <!-- Purchase Request Detail -->
-        <a href="#"
+        <a href="{{ route('pr_detail.index') }}"
            class="flex items-center gap-3 py-3 px-4 rounded-lg font-semibold
-           {{ request()->is('purchase-request/detail*') ? 'bg-[#187FC4] text-white' : 'text-black hover:bg-gray-100' }}">
+           {{ request()->routeIs('pr_detail.index') ? 'bg-[#187FC4] text-white' : 'text-black hover:bg-gray-100' }}">
             <i class="fa-solid fa-file-lines"></i>
             Purchase Request Detail
         </a>

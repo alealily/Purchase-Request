@@ -14,11 +14,13 @@ class PrDetail extends Model
     protected $primaryKey = "id_pr_detail";
     protected $fillable = [
         'id_pr',
+        'id_user',
+        'id_supplier',
         'quotation_file',
         'quantity',
         'unit_price',
         'total_cost',
-        'material_description',
+        'material_desc',
         'uom',
         'currency_code',
     ];
