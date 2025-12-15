@@ -59,10 +59,17 @@ class PurchaseRequestController extends Controller
         ]);
 
         try {
-            // Generate PR Number
-            $lastPR = PurchaseRequest::latest('id_pr')->first();
-            $nextNumber = $lastPR ? intval(substr($lastPR->pr_number, -6)) + 1 : 1;
-            $prNumber = '10' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+            // Generate PR Number (format: 1000020400, 1000020401, 1000020402, ...)
+            $baseNumber = 1000020400;
+            $lastPR = PurchaseRequest::orderBy('id_pr', 'desc')->first();
+            
+            if ($lastPR && is_numeric($lastPR->pr_number) && intval($lastPR->pr_number) >= $baseNumber) {
+                // If last PR number is already in new format, increment it
+                $prNumber = strval(intval($lastPR->pr_number) + 1);
+            } else {
+                // First PR or migration from old format - start with base number
+                $prNumber = strval($baseNumber);
+            }
 
             // Create Purchase Request
             $pr = PurchaseRequest::create([
@@ -157,7 +164,8 @@ class PurchaseRequestController extends Controller
             'unit_price' => 'required|numeric|min:0',
             'quantity' => 'required|integer|min:1',
             'id_supplier' => 'required|exists:supplier,id_supplier',
-            'quotation_file' => 'nullable|file|mimes:pdf,docx|max:10240',
+            'quotation_files' => 'nullable|array|max:3', // Max 3 files
+            'quotation_files.*' => 'file|mimes:pdf,doc,docx|max:10240', // 10MB max each
         ]);
 
         try {
@@ -173,12 +181,16 @@ class PurchaseRequestController extends Controller
             $prDetail->total_cost = $totalCost;
             $prDetail->id_supplier = $validated['id_supplier'];
             
-            // Handle file upload
-            if ($request->hasFile('quotation_file')) {
-                $file = $request->file('quotation_file');
-                $filename = time() . '_' . $file->getClientOriginalName();
-                $file->storeAs('quotations', $filename, 'public');
-                $prDetail->quotation_file = $filename;
+            // Handle multiple file uploads (only if new files were uploaded)
+            if ($request->hasFile('quotation_files')) {
+                $uploadedFiles = [];
+                foreach ($request->file('quotation_files') as $file) {
+                    $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
+                    $file->storeAs('quotations', $filename, 'public');
+                    $uploadedFiles[] = $filename;
+                }
+                // Store as JSON
+                $prDetail->quotation_file = json_encode($uploadedFiles);
             }
             
             $prDetail->save();
