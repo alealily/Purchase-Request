@@ -20,7 +20,7 @@
         <!-- Add Purchase Request -->
         <a href="{{ route('purchase_request.index') }}"
            class="flex items-center gap-3 py-3 px-4 rounded-lg font-semibold
-           {{ request()->routeIs('purchase_request.index') ? 'bg-[#187FC4] text-white' : 'text-black hover:bg-gray-100' }}">
+           {{ request()->routeIs('purchase_request.*') ? 'bg-[#187FC4] text-white' : 'text-black hover:bg-gray-100' }}">
             <i class="fa-solid fa-file-circle-plus"></i>
             Add Purchase Request
         </a>

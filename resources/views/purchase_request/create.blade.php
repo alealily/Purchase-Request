@@ -183,6 +183,32 @@
     </div>
 </div>
 
+{{-- Max Files Warning Modal --}}
+<dialog id="maxFilesModal" class="rounded-2xl shadow-xl p-0 backdrop:bg-black/50 max-w-md w-full">
+    {{-- Header --}}
+    <div class="flex justify-between items-center px-6 py-4">
+        <h2 class="text-xl font-bold text-gray-800">Can't Add New File</h2>
+        <button onclick="document.getElementById('maxFilesModal').close()" 
+                class="text-gray-400 hover:text-gray-800 text-2xl leading-none">&times;</button>
+    </div>
+    {{-- Full-width divider --}}
+    <div class="border-t-1 border-gray-300"></div>
+    {{-- Body --}}
+    <div class="px-6 py-5">
+        <p class="text-gray-600">
+            You have already selected <strong>3 files</strong> (maximum). 
+            Please remove a file first before adding a new one.
+        </p>
+    </div>
+    {{-- Footer --}}
+    <div class="flex justify-end px-6 pb-6">
+        <button onclick="document.getElementById('maxFilesModal').close()" 
+                class="px-6 py-2 bg-[#187FC4] text-white rounded-lg font-semibold hover:bg-[#156ca7] transition">
+            OK
+        </button>
+    </div>
+</dialog>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Auto calculate total cost
@@ -200,34 +226,90 @@
         unitPriceInput.addEventListener('input', calculateTotal);
         quantityInput.addEventListener('input', calculateTotal);
 
-        // File upload validation (max 3 files)
+        // File upload with accumulation (max 3 files)
         const fileInput = document.getElementById('quotationFiles');
         const fileList = document.getElementById('fileList');
         const MAX_FILES = 3;
+        
+        // Store accumulated files
+        let accumulatedFiles = new DataTransfer();
+
+        // Check before opening file dialog
+        fileInput.addEventListener('click', function(e) {
+            if (accumulatedFiles.files.length >= MAX_FILES) {
+                e.preventDefault();
+                document.getElementById('maxFilesModal').showModal();
+                return false;
+            }
+        });
 
         fileInput.addEventListener('change', function() {
-            const files = this.files;
+            const newFiles = this.files;
             
-            if (files.length > MAX_FILES) {
-                alert('Maximum 3 files allowed. Please select up to 3 files only.');
-                this.value = '';
-                fileList.innerHTML = '';
-                return;
+            // Add new files to accumulated list
+            for (let i = 0; i < newFiles.length; i++) {
+                // Check if file already exists
+                let exists = false;
+                for (let j = 0; j < accumulatedFiles.files.length; j++) {
+                    if (accumulatedFiles.files[j].name === newFiles[i].name) {
+                        exists = true;
+                        break;
+                    }
+                }
+                
+                if (!exists && accumulatedFiles.files.length < MAX_FILES) {
+                    accumulatedFiles.items.add(newFiles[i]);
+                }
             }
+            
+            // Check if exceeded max
+            if (accumulatedFiles.files.length > MAX_FILES) {
+                alert('Maximum 3 files allowed. Some files were not added.');
+                // Trim to max files
+                while (accumulatedFiles.files.length > MAX_FILES) {
+                    accumulatedFiles.items.remove(accumulatedFiles.files.length - 1);
+                }
+            }
+            
+            // Update the file input with accumulated files
+            this.files = accumulatedFiles.files;
 
             // Display selected files
+            updateFileList();
+        });
+        
+        function updateFileList() {
+            const files = accumulatedFiles.files;
             if (files.length > 0) {
-                let html = '<strong>Selected files:</strong><ul class="list-disc ml-4 mt-1">';
+                let html = '<strong>Selected files (' + files.length + '/' + MAX_FILES + '):</strong><ul class="list-disc ml-4 mt-1">';
                 for (let i = 0; i < files.length; i++) {
                     const fileSizeMB = (files[i].size / (1024 * 1024)).toFixed(2);
-                    html += `<li>${files[i].name} (${fileSizeMB} MB)</li>`;
+                    html += `<li class="flex items-center gap-2">
+                        <span>${files[i].name} (${fileSizeMB} MB)</span>
+                        <button type="button" onclick="removeFile(${i})" class="text-red-500 hover:text-red-700 text-xs">
+                            <i class="fa-solid fa-times"></i> Remove
+                        </button>
+                    </li>`;
                 }
                 html += '</ul>';
                 fileList.innerHTML = html;
             } else {
                 fileList.innerHTML = '';
             }
-        });
+        }
+        
+        // Remove file function (make global)
+        window.removeFile = function(index) {
+            const newDataTransfer = new DataTransfer();
+            for (let i = 0; i < accumulatedFiles.files.length; i++) {
+                if (i !== index) {
+                    newDataTransfer.items.add(accumulatedFiles.files[i]);
+                }
+            }
+            accumulatedFiles = newDataTransfer;
+            fileInput.files = accumulatedFiles.files;
+            updateFileList();
+        };
     });
 </script>
 @endsection
