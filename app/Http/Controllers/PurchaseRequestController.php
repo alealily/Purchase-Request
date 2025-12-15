@@ -22,7 +22,9 @@ class PurchaseRequestController extends Controller
      */
     public function index()
     {
+        // Only show PRs created by the logged-in user
         $pr = PurchaseRequest::with(['prDetails.supplier', 'user'])
+                            ->where('id_user', auth()->id())
                             ->orderBy('created_at', 'desc')
                             ->get();
         
@@ -130,6 +132,13 @@ class PurchaseRequestController extends Controller
         $pr = PurchaseRequest::with(['prDetails.supplier', 'user', 'approvals.user'])
                             ->findOrFail($id);
         
+        // Check ownership - only allow user to view their own PR
+        if ($pr->id_user !== auth()->id()) {
+            return redirect()
+                ->route('purchase_request.index')
+                ->with('error', 'You are not authorized to view this Purchase Request.');
+        }
+        
         $approvalHistory = $this->approvalService->getApprovalHistory($pr);
         $canApprove = $this->approvalService->canUserApprove(auth()->user(), $pr);
         
@@ -143,6 +152,13 @@ class PurchaseRequestController extends Controller
     {
         $pr = PurchaseRequest::with('prDetails')->findOrFail($id);
         $suppliers = Supplier::all();
+        
+        // Check ownership - only allow user to edit their own PR
+        if ($pr->id_user !== auth()->id()) {
+            return redirect()
+                ->route('purchase_request.index')
+                ->with('error', 'You are not authorized to edit this Purchase Request.');
+        }
         
         // Only allow edit if status is pending or revision
         if (!in_array($pr->status, ['pending', 'revision'])) {
@@ -170,6 +186,13 @@ class PurchaseRequestController extends Controller
 
         try {
             $pr = PurchaseRequest::findOrFail($id);
+            
+            // Check ownership - only allow user to update their own PR
+            if ($pr->id_user !== auth()->id()) {
+                return redirect()
+                    ->route('purchase_request.index')
+                    ->with('error', 'You are not authorized to update this Purchase Request.');
+            }
             
             // Update PR Detail
             $totalCost = $validated['unit_price'] * $validated['quantity'];
@@ -312,6 +335,13 @@ class PurchaseRequestController extends Controller
     {
         try {
             $pr = PurchaseRequest::findOrFail($id);
+            
+            // Check ownership - only allow user to delete their own PR
+            if ($pr->id_user !== auth()->id()) {
+                return redirect()
+                    ->route('purchase_request.index')
+                    ->with('error', 'You are not authorized to delete this Purchase Request.');
+            }
             
             // Only allow delete if status is pending or revision
             if (!in_array($pr->status, ['pending', 'revision'])) {

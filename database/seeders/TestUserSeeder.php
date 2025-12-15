@@ -13,65 +13,82 @@ class TestUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Clear existing test users
-        DB::table('users')->whereIn('email', [
-            'employee@test.com',
-            'superior@test.com',
-            'it@test.com',
-            'hod@test.com',
-            'hodiv@test.com',
-            'presdir@test.com',
-        ])->delete();
+        // Clear ALL existing data
+        $this->command->info('Clearing existing data...');
+        
+        // Delete in order of foreign key dependencies
+        DB::table('approval')->delete();
+        DB::table('pr_detail')->delete();
+        DB::table('pr')->delete();
+        DB::table('users')->delete();
+        
+        $this->command->info('All data cleared.');
 
-        // Create test users for each role
+        // Create 6 structured users
         $users = [
-            // Employee
+            // Employee 1 - Maintenance Engineering, PCBA
             [
-                'name' => 'Test Employee',
-                'email' => 'employee@test.com',
+                'name' => 'Abyan',
+                'email' => 'abyan@test.com',
                 'password' => Hash::make('admin123'),
                 'badge' => 'EMP001',
                 'role' => 'employee',
-                'department' => 'IT Department',
-                'division' => 'General',
+                'position' => 'staff',
+                'department' => 'Maintenance Engineering',
+                'division' => 'PCBA',
             ],
-            // IT
+            // Employee 2 - Production Testing, PCBA
             [
-                'name' => 'Test IT',
-                'email' => 'it@test.com',
+                'name' => 'Rey',
+                'email' => 'rey@test.com',
+                'password' => Hash::make('admin123'),
+                'badge' => 'EMP002',
+                'role' => 'employee',
+                'position' => 'staff',
+                'department' => 'Production Testing',
+                'division' => 'PCBA',
+            ],
+            // IT - IT Department, General
+            [
+                'name' => 'El',
+                'email' => 'el@test.com',
                 'password' => Hash::make('admin123'),
                 'badge' => 'IT001',
                 'role' => 'it',
+                'position' => 'staff',
                 'department' => 'IT',
                 'division' => 'General',
             ],
-            // Head of Department
+            // Head of Department - Maintenance Engineering, PCBA
             [
-                'name' => 'Test Head of Dept',
-                'email' => 'hod@test.com',
+                'name' => 'Raki',
+                'email' => 'raki@test.com',
                 'password' => Hash::make('admin123'),
                 'badge' => 'HOD001',
                 'role' => 'Head of Department',
-                'department' => 'Production',
+                'position' => 'head_of_department',
+                'department' => 'Maintenance Engineering',
                 'division' => 'PCBA',
             ],
-            // Head of Division
+            // Head of Division - PCBA
             [
-                'name' => 'Test Head of Division',
-                'email' => 'hodiv@test.com',
+                'name' => 'Kira',
+                'email' => 'kira@test.com',
                 'password' => Hash::make('admin123'),
                 'badge' => 'HODIV001',
                 'role' => 'Head of Division',
-                'department' => 'Management',
-                'division' => 'General',
+                'position' => 'head_of_division',
+                'department' => '-',
+                'division' => 'PCBA',
             ],
             // President Director
             [
-                'name' => 'Test President Director',
-                'email' => 'presdir@test.com',
+                'name' => 'Mai',
+                'email' => 'mai@test.com',
                 'password' => Hash::make('admin123'),
                 'badge' => 'PRES001',
                 'role' => 'President Director',
+                'position' => 'president_director',
                 'department' => '-',
                 'division' => '-',
             ],
@@ -81,16 +98,17 @@ class TestUserSeeder extends Seeder
 
         $this->command->info('');
         $this->command->info('========================================');
-        $this->command->info('Test users created successfully!');
+        $this->command->info('6 Structured users created successfully!');
         $this->command->info('========================================');
         $this->command->info('');
         $this->command->info('Login credentials (password: admin123):');
         $this->command->info('');
-        $this->command->info('  Employee:           employee@test.com');
-        $this->command->info('  IT:                 it@test.com');
-        $this->command->info('  Head of Dept:       hod@test.com');
-        $this->command->info('  Head of Division:   hodiv@test.com');
-        $this->command->info('  President Director: presdir@test.com');
+        $this->command->info('  Employee (Maintenance Eng, PCBA):     abyan@test.com');
+        $this->command->info('  Employee (Production Testing, PCBA):  rey@test.com');
+        $this->command->info('  IT (IT, General):                     el@test.com');
+        $this->command->info('  Head of Dept (Maintenance Eng, PCBA): raki@test.com');
+        $this->command->info('  Head of Division (PCBA):              kira@test.com');
+        $this->command->info('  President Director:                   mai@test.com');
         $this->command->info('');
     }
 }
