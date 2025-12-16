@@ -4,13 +4,17 @@
 
 @section('content')
 <div class="flex bg-[#F4F5FA] min-h-screen">
-    {{-- Sidebar --}}
+    {{-- Sidebar (dynamic based on role) --}}
     @php
         $userRole = strtolower(auth()->user()->role ?? '');
+        $superiorRoles = ['head of department', 'head of division', 'general manager', 'president director'];
+        $isSuperior = in_array($userRole, $superiorRoles);
     @endphp
     <aside class="w-64 bg-white h-screen sticky top-0">
         @if($userRole === 'it')
             @include('components.it_sidebar')
+        @elseif($isSuperior)
+            @include('components.superior_sidebar')
         @else
             @include('components.employee_sidebar')
         @endif
@@ -69,6 +73,18 @@
                         <p class="font-semibold text-gray-800">{{ $pr->user->name ?? '-' }}</p>
                     </div>
 
+                    {{-- Department --}}
+                    <div>
+                        <label class="block text-sm text-gray-500 mb-1">Department</label>
+                        <p class="font-semibold text-gray-800">{{ $pr->user->department ?? '-' }}</p>
+                    </div>
+
+                    {{-- Division --}}
+                    <div>
+                        <label class="block text-sm text-gray-500 mb-1">Division</label>
+                        <p class="font-semibold text-gray-800">{{ $pr->user->division ?? '-' }}</p>
+                    </div>
+
                     {{-- Created Date --}}
                     <div>
                         <label class="block text-sm text-gray-500 mb-1">Created At</label>
@@ -124,7 +140,7 @@
                     {{-- Total Cost --}}
                     <div>
                         <label class="block text-sm text-gray-500 mb-1">Total Cost</label>
-                        <p class="font-bold text-xl text-[#187FC4]">Rp{{ number_format($pr->prDetails->total_cost ?? 0, 0, ',', '.') }}</p>
+                        <p class="font-semibold text-[#187FC4] text-lg">Rp{{ number_format($pr->prDetails->total_cost ?? 0, 0, ',', '.') }}</p>
                     </div>
 
                     {{-- Supplier --}}
@@ -139,7 +155,6 @@
 
                 {{-- Quotation Files --}}
                 <h3 class="text-md font-bold text-gray-800 mb-4">Quotation Files</h3>
-                
                 @if($pr->prDetails && $pr->prDetails->quotation_file)
                     @php
                         $files = json_decode($pr->prDetails->quotation_file, true);
@@ -173,29 +188,77 @@
                     <p class="text-gray-400 italic">No quotation files uploaded</p>
                 @endif
 
-                {{-- Action Buttons --}}
-                <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-                    <a href="{{ route('purchase_request.index') }}" 
+                {{-- Back Button --}}
+                <div class="flex justify-start items-center mt-8 pt-6 border-t border-gray-200">
+                    <a href="{{ route('pr_detail.index') }}" 
                        class="px-6 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 font-semibold transition">
                         <i class="fa-solid fa-arrow-left mr-2"></i> Back to List
                     </a>
-                    
-                    {{-- Show Edit button only for pending/revision status --}}
-                    @if(in_array(strtolower($pr->status), ['pending', 'revision']))
-                        <a href="{{ route('purchase_request.edit', $pr->id_pr) }}" 
-                           class="px-6 py-2 bg-[#187FC4] text-white rounded-lg font-semibold hover:bg-[#156ca7] transition">
-                            <i class="fa-solid fa-pen-to-square mr-2"></i> Edit Request
-                        </a>
-                    @endif
                 </div>
             </div>
 
-            {{-- Sidebar: Approval Status --}}
+            {{-- Sidebar: Approval History & Actions --}}
             <div class="col-span-1 space-y-6">
-                {{-- Approval Status Card --}}
+                {{-- Approval Actions (for Current Approver) --}}
+                @if($canApprove)
+                    <div class="bg-white p-6 rounded-2xl shadow-sm">
+                        <h2 class="text-lg font-bold text-gray-800 mb-4 pb-3 border-b border-gray-200">
+                            Approval Action
+                        </h2>
+                        
+                        <div class="space-y-3">
+                            {{-- Approve Button --}}
+                            <form action="{{ route('purchase_request.approve', $pr->id_pr) }}" method="POST">
+                                @csrf
+                                <div class="mb-3">
+                                    <textarea name="remarks" 
+                                              placeholder="Remarks (optional)"
+                                              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                                              rows="2"></textarea>
+                                </div>
+                                <button type="submit" 
+                                        class="w-full px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition">
+                                    <i class="fa-solid fa-check mr-2"></i> Approve
+                                </button>
+                            </form>
+                            
+                            {{-- Revision Button --}}
+                            <form action="{{ route('purchase_request.revision', $pr->id_pr) }}" method="POST">
+                                @csrf
+                                <div class="mb-3">
+                                    <textarea name="remarks" 
+                                              placeholder="Reason for revision (required)"
+                                              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                              rows="2" required></textarea>
+                                </div>
+                                <button type="submit" 
+                                        class="w-full px-4 py-2 bg-gray-500 text-white rounded-lg font-semibold hover:bg-gray-600 transition">
+                                    <i class="fa-solid fa-rotate-left mr-2"></i> Request Revision
+                                </button>
+                            </form>
+                            
+                            {{-- Reject Button --}}
+                            <form action="{{ route('purchase_request.reject', $pr->id_pr) }}" method="POST">
+                                @csrf
+                                <div class="mb-3">
+                                    <textarea name="remarks" 
+                                              placeholder="Reason for rejection (required)"
+                                              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                                              rows="2" required></textarea>
+                                </div>
+                                <button type="submit" 
+                                        class="w-full px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition">
+                                    <i class="fa-solid fa-xmark mr-2"></i> Reject
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Approval History Timeline --}}
                 <div class="bg-white p-6 rounded-2xl shadow-sm">
                     <h2 class="text-lg font-bold text-gray-800 mb-4 pb-3 border-b border-gray-200">
-                        Approval Status
+                        Approval History
                     </h2>
                     
                     @if(count($approvalHistory) > 0)
@@ -205,6 +268,7 @@
                                     $status = strtolower($history['status'] ?? 'pending');
                                     $isLast = $loop->last;
                                     
+                                    // Dot and line colors based on status
                                     $dotColors = [
                                         'approve' => 'bg-green-600',
                                         'approved' => 'bg-green-600',
@@ -216,6 +280,7 @@
                                     ];
                                     $dotColor = $dotColors[$status] ?? 'bg-gray-300';
                                     
+                                    // Badge colors
                                     $badgeColors = [
                                         'approve' => 'bg-[#B7FCC9] text-[#0A7D0C]',
                                         'approved' => 'bg-[#B7FCC9] text-[#0A7D0C]',
@@ -227,6 +292,7 @@
                                     ];
                                     $badgeColor = $badgeColors[$status] ?? 'bg-gray-200 text-gray-600';
                                     
+                                    // Status display text
                                     $statusDisplay = match($status) {
                                         'approve', 'approved' => 'Approved',
                                         'reject', 'rejected' => 'Rejected',
@@ -236,30 +302,38 @@
                                         default => ucfirst($status),
                                     };
                                     
+                                    // Line color (green if approved, gray otherwise)
                                     $lineColor = in_array($status, ['approve', 'approved']) ? 'bg-green-600' : 'bg-gray-200';
                                 @endphp
                                 
                                 <div class="flex gap-4 {{ !$isLast ? 'pb-6' : '' }}">
+                                    {{-- Timeline dot and line --}}
                                     <div class="relative flex flex-col items-center">
+                                        {{-- Dot --}}
                                         <div class="w-4 h-4 rounded-full {{ $dotColor }} z-10"></div>
+                                        {{-- Connecting line (not for last item) --}}
                                         @if(!$isLast)
                                             <div class="w-0.5 flex-1 {{ $lineColor }} mt-1"></div>
                                         @endif
                                     </div>
                                     
+                                    {{-- Content --}}
                                     <div class="flex-1 -mt-1">
+                                        {{-- Status Badge --}}
                                         <span class="inline-block px-3 py-1 rounded-full text-xs font-bold {{ $badgeColor }}">
                                             {{ $statusDisplay }}
                                         </span>
                                         
+                                        {{-- Approver info --}}
                                         <p class="text-sm text-gray-700 mt-2">
-                                            <span class="font-bold">{{ $history['user'] ?? 'Unknown' }}</span>
+                                            By <span class="font-bold">{{ $history['user'] ?? 'Unknown' }}</span>
                                             <span class="text-gray-500 text-xs">({{ $history['role'] ?? 'Unknown' }} - {{ $history['department'] ?? '-' }})</span>
                                             @if(!empty($history['date']))
                                                 <br><span class="text-gray-400 text-xs">{{ $history['date'] }}</span>
                                             @endif
                                         </p>
                                         
+                                        {{-- Remarks if any --}}
                                         @if(!empty($history['remarks']))
                                             <p class="text-xs text-gray-500 mt-1 italic bg-gray-50 p-2 rounded">
                                                 "{{ $history['remarks'] }}"

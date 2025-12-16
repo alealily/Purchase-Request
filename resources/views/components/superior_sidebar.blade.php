@@ -20,7 +20,7 @@
         <!-- Purchase Request Detail -->
         <a href="{{ route('pr_detail.index') }}"
            class="flex items-center gap-3 py-3 px-4 rounded-lg font-semibold
-           {{ request()->routeIs('pr_detail.index') ? 'bg-[#187FC4] text-white' : 'text-black hover:bg-gray-100' }}">
+           {{ request()->routeIs('pr_detail.*') ? 'bg-[#187FC4] text-white' : 'text-black hover:bg-gray-100' }}">
             <i class="fa-solid fa-file-lines"></i>
             Purchase Request Detail
         </a>

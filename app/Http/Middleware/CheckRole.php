@@ -15,6 +15,7 @@ class CheckRole
         'superior',
         'head of department',
         'head of division',
+        'general manager',
         'president director',
     ];
 

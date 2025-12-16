@@ -20,22 +20,26 @@ class ApprovalWorkflowService
         $totalCost = $pr->prDetails->total_cost ?? 0;
         $division = $creator->division;
         
+        // Threshold: Rp 25.000.000
+        $costThreshold = 25000000;
+        
         $chain = [];
         
-        // Level 1: Always Head of Department
+        // Level 1: Always Head of Department (same department as creator)
         $chain[] = [
             'level' => 1,
             'position' => 'head_of_department',
             'department' => $creator->department,
+            'division' => $creator->division,
         ];
         
         // Level 2 and beyond: Based on division and total cost
         if ($creator->isGeneralDivision()) {
-            // General Division Flow: Head Dept → Head Div General → President Dir
+            // General Division Flow: Head Dept → Head Div → President Director
             $chain[] = [
                 'level' => 2,
                 'position' => 'head_of_division',
-                'division' => 'general',
+                'division' => 'General',
             ];
             
             $chain[] = [
@@ -44,19 +48,18 @@ class ApprovalWorkflowService
             ];
             
         } elseif ($creator->isFactoryDivision()) {
-            // Factory Division Flow
+            // Factory Division Flow: Head Dept → Head Div (Factory Manager)
             $chain[] = [
                 'level' => 2,
                 'position' => 'head_of_division',
                 'division' => $creator->division, // PCBA, ASSY 1, etc.
             ];
             
-            // If total cost > $1500, add GM and President Director
-            if ($totalCost > 1500) {
+            // If total cost > Rp 25.000.000, add General Manager and President Director
+            if ($totalCost > $costThreshold) {
                 $chain[] = [
                     'level' => 3,
-                    'position' => 'head_of_division',
-                    'division' => 'general', // GM (Head of Division General)
+                    'position' => 'general_manager',
                 ];
                 
                 $chain[] = [
@@ -64,7 +67,7 @@ class ApprovalWorkflowService
                     'position' => 'president_director',
                 ];
             }
-            // If total cost <= $1500, stop at Head of Division (Factory)
+            // If total cost <= Rp 25.000.000, final approval at Head of Division (Factory Manager)
         }
         
         return $chain;
@@ -78,8 +81,8 @@ class ApprovalWorkflowService
      */
     public function getApproverForLevel(array $levelConfig): ?User
     {
-        $query = User::where('role', 'superior')
-                    ->where('position', $levelConfig['position']);
+        // Find user by position (not role)
+        $query = User::where('position', $levelConfig['position']);
         
         if (isset($levelConfig['department'])) {
             $query->where('department', $levelConfig['department']);
@@ -108,7 +111,7 @@ class ApprovalWorkflowService
             if ($approver) {
                 Approval::create([
                     'id_pr' => $pr->id_pr,
-                    'id_user' => $approver->id,
+                    'id_user' => $approver->id_user,
                     'level' => $levelConfig['level'],
                     'approval_status' => 'pending',
                 ]);
@@ -145,7 +148,7 @@ class ApprovalWorkflowService
             return false;
         }
         
-        return $currentApproval->id_user === $user->id;
+        return $currentApproval->id_user === $user->id_user;
     }
     
     /**
@@ -253,16 +256,52 @@ class ApprovalWorkflowService
     }
     
     /**
-     * Get approval history for PR
+     * Get approval history for PR (formatted for view)
      * 
      * @param PurchaseRequest $pr
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return array
      */
-    public function getApprovalHistory(PurchaseRequest $pr)
+    public function getApprovalHistory(PurchaseRequest $pr): array
     {
-        return $pr->approvals()
-                  ->with('user')
-                  ->orderBy('level')
-                  ->get();
+        // Get all non-cancelled approvals ordered by creation (id_approval)
+        // This ensures history is shown chronologically including past revision rounds
+        $approvals = $pr->approvals()
+                       ->with('user')
+                       ->where('approval_status', '!=', 'cancelled')
+                       ->orderBy('id_approval')
+                       ->get();
+        
+        $history = [];
+        
+        foreach ($approvals as $approval) {
+            // Map position to readable role name
+            $roleNames = [
+                'head_of_department' => 'HEAD OF DEPARTMENT',
+                'head_of_division' => 'HEAD OF DIVISION',
+                'general_manager' => 'GENERAL MANAGER',
+                'president_director' => 'PRESIDENT DIRECTOR',
+            ];
+            
+            $user = $approval->user;
+            
+            // Use department if available, otherwise use division
+            $deptOrDiv = (!empty($user->department) && $user->department !== '-') 
+                        ? $user->department 
+                        : ($user->division ?? '-');
+            
+            $history[] = [
+                'user' => $user->name ?? 'Unknown',
+                'role' => $roleNames[$user->position ?? ''] ?? strtoupper($user->role ?? 'Unknown'),
+                'department' => $deptOrDiv,
+                'division' => $user->division ?? '-',
+                'status' => $approval->approval_status,
+                'remarks' => $approval->remarks,
+                'date' => $approval->approval_date 
+                    ? \Carbon\Carbon::parse($approval->approval_date)->format('d M Y, H:i')
+                    : null,
+            ];
+        }
+        
+        return $history;
     }
 }

@@ -132,15 +132,34 @@ class PurchaseRequestController extends Controller
         $pr = PurchaseRequest::with(['prDetails.supplier', 'user', 'approvals.user'])
                             ->findOrFail($id);
         
-        // Check ownership - only allow user to view their own PR
-        if ($pr->id_user !== auth()->id()) {
+        $user = auth()->user();
+        $userRole = strtolower($user->role ?? '');
+        $superiorRoles = ['head of department', 'head of division', 'general manager', 'president director'];
+        
+        // Check access rights
+        $canView = false;
+        
+        // Owner can always view their own PR
+        if ($pr->id_user === $user->id_user) {
+            $canView = true;
+        }
+        // IT can view all PRs
+        elseif ($userRole === 'it') {
+            $canView = true;
+        }
+        // Superiors can view if they are an approver for this PR
+        elseif (in_array($userRole, $superiorRoles)) {
+            $canView = $pr->approvals->contains('id_user', $user->id_user);
+        }
+        
+        if (!$canView) {
             return redirect()
                 ->route('purchase_request.index')
                 ->with('error', 'You are not authorized to view this Purchase Request.');
         }
         
         $approvalHistory = $this->approvalService->getApprovalHistory($pr);
-        $canApprove = $this->approvalService->canUserApprove(auth()->user(), $pr);
+        $canApprove = $this->approvalService->canUserApprove($user, $pr);
         
         return view('purchase_request.show', compact('pr', 'approvalHistory', 'canApprove'));
     }
@@ -221,8 +240,13 @@ class PurchaseRequestController extends Controller
             // Reset approval if status was revision
             if ($pr->status === 'revision') {
                 $pr->update(['status' => 'pending']);
-                // Recreate approval chain
-                $pr->approvals()->delete();
+                
+                // Delete only pending/cancelled approvals (preserve revision/approve/reject history)
+                $pr->approvals()
+                   ->whereIn('approval_status', ['pending', 'cancelled'])
+                   ->delete();
+                
+                // Recreate approval chain for new round
                 $this->approvalService->createApprovalChain($pr);
             }
 

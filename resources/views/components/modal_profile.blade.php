@@ -1,4 +1,3 @@
-{{-- Profile Popup - Dropdown style at top right --}}
 @php
     $user = auth()->user();
     $userRole = strtolower($user->role ?? '');
@@ -54,7 +53,7 @@
         
         {{-- Role Badge --}}
         <div class="mt-4">
-            <span class="inline-block px-4 py-1.5 {{ $roleBadgeClass }} rounded-full text-sm font-semibold">
+            <span class="inline-block px-4 py-1.5 {{ $roleBadgeClass }} rounded-xl text-sm font-semibold">
                 {{ $roleDisplayName }}
             </span>
         </div>
