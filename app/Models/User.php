@@ -17,6 +17,7 @@ class User extends Authenticatable
     // Database configuration
     protected $table = 'users';
     protected $primaryKey = 'id_user';
+    public $timestamps = false; // Disable timestamps - table doesn't have created_at/updated_at
 
     /**
      * The attributes that are mass assignable.
@@ -32,6 +33,7 @@ class User extends Authenticatable
         'position',
         'department',
         'division',
+        'is_active',
     ];
 
     /**
@@ -98,12 +100,13 @@ class User extends Authenticatable
      */
     public function isGeneralDivision(): bool
     {
-        return $this->division === 'general';
+        return strtolower($this->division ?? '') === 'general';
     }
 
     public function isFactoryDivision(): bool
     {
-        return in_array($this->division, ['PCBA', 'ASSY 1', 'ASSY 2', 'MOLDING']);
+        $factoryDivisions = ['pcba', 'assy 1', 'assy 2', 'molding'];
+        return in_array(strtolower($this->division ?? ''), $factoryDivisions);
     }
 
     /**
@@ -127,5 +130,10 @@ class User extends Authenticatable
     public function bawahan(): HasMany
     {
         return $this->hasMany(User::class, 'id_atasan');
+    }
+
+    public function signature(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Signature::class, 'id_user', 'id_user');
     }
 }

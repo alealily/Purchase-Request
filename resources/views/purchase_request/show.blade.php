@@ -148,21 +148,23 @@
                         }
                     @endphp
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                        <ul class="space-y-2">
+                        <ul class="space-y-3">
                             @foreach($files as $file)
                                 @php
                                     $displayName = preg_replace('/^\d+_[a-f0-9]+_/', '', $file);
                                 @endphp
-                                <li class="flex items-center gap-3">
-                                    <i class="fa-solid fa-file-pdf text-red-500"></i>
-                                    <a href="{{ url('/storage/quotations/' . $file) }}" 
-                                       target="_blank" 
-                                       class="text-blue-600 hover:underline font-medium">
-                                        {{ $displayName }}
-                                    </a>
+                                <li class="grid grid-cols-[1fr_auto] gap-4 items-center">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <i class="fa-solid fa-file-pdf text-red-500 flex-shrink-0"></i>
+                                        <a href="{{ url('/storage/quotations/' . $file) }}" 
+                                           target="_blank" 
+                                           class="text-blue-600 hover:underline font-medium truncate">
+                                            {{ $displayName }}
+                                        </a>
+                                    </div>
                                     <a href="{{ url('/storage/quotations/' . $file) }}" 
                                        download 
-                                       class="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded">
+                                       class="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded whitespace-nowrap flex items-center gap-1">
                                         <i class="fa-solid fa-download"></i> Download
                                     </a>
                                 </li>

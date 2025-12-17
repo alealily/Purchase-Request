@@ -1,0 +1,61 @@
+/* Modal Choose Role Styles */
+/* Digunakan di: Login, User Management */
+
+/* Role Selection Cards */
+.role-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 9rem;
+    height: 8rem;
+    background-color: #fff;
+    border: 2px solid #e5e7eb;
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.role-card:hover {
+    border-color: #187FC4;
+    box-shadow: 0 4px 10px rgba(24, 127, 196, 0.15);
+    transform: translateY(-2px);
+}
+
+.role-card i {
+    color: #374151;
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.role-card p {
+    color: #111827;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.role-card:hover i,
+.role-card:hover p {
+    color: #187FC4;
+}
+
+.role-card.selected {
+    border-color: #187FC4;
+    background-color: #F3F7FF;
+}
+
+.role-card.selected i,
+.role-card.selected p {
+    color: #187FC4;
+}
+
+/* Disabled Role Dropdown (User Management) */
+#roleDropdownTrigger.disabled {
+    background-color: #f3f4f6;
+    color: #6b7280;
+    cursor: not-allowed;
+}

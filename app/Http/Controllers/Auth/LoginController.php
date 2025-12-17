@@ -21,20 +21,48 @@ class LoginController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate credentials
-        $credentials = $request->validate([
+        // Validate credentials including role
+        $request->validate([
             'email' => 'required|email',
             'password' => 'required',
+            'role' => 'required|string',
         ]);
+
+        $credentials = [
+            'email' => $request->email,
+            'password' => $request->password,
+        ];
+        $selectedRole = strtolower($request->role);
 
         // Debug log
         \Log::info('Login attempt', [
             'email' => $credentials['email'],
+            'selected_role' => $selectedRole,
             'user_exists' => \App\Models\User::where('email', $credentials['email'])->exists(),
         ]);
 
         // Attempt login
         if (Auth::attempt($credentials, $request->filled('remember'))) {
+            // Check if selected role matches user's actual role
+            $user = auth()->user();
+            $userRole = strtolower($user->role ?? '');
+            
+            if ($userRole !== $selectedRole) {
+                // Role mismatch - logout and return error
+                Auth::logout();
+                $request->session()->invalidate();
+                
+                \Log::warning('Login failed - role mismatch', [
+                    'email' => $credentials['email'],
+                    'selected_role' => $selectedRole,
+                    'actual_role' => $userRole,
+                ]);
+                
+                return back()->withErrors([
+                    'role' => 'The selected role does not match your account. Please select the correct role.',
+                ])->onlyInput('email', 'role');
+            }
+            
             $request->session()->regenerate();
             
             \Log::info('Login successful', ['user_id' => auth()->id()]);
@@ -48,7 +76,7 @@ class LoginController extends Controller
         // Login failed
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+        ])->onlyInput('email', 'role');
     }
 
     /**

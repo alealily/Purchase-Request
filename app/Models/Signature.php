@@ -19,13 +19,11 @@ class Signature extends Model
 
     public $timestamps = false;
 
-    public function userConvenyor(): BelongsTo
+    /**
+     * Get the user that owns this signature
+     */
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'id_user_convenyor');
-    }
-
-    public function userAvailable(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'id_user_available');
+        return $this->belongsTo(User::class, 'id_user', 'id_user');
     }
 }

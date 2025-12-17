@@ -55,11 +55,12 @@ class ApprovalWorkflowService
                 'division' => $creator->division, // PCBA, ASSY 1, etc.
             ];
             
-            // If total cost > Rp 25.000.000, add General Manager and President Director
+            // If total cost > Rp 25.000.000, add Head of Division General and President Director
             if ($totalCost > $costThreshold) {
                 $chain[] = [
                     'level' => 3,
-                    'position' => 'general_manager',
+                    'position' => 'head_of_division',
+                    'division' => 'General', // HODiv of General division (General Manager)
                 ];
                 
                 $chain[] = [

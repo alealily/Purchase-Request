@@ -47,7 +47,14 @@ Route::middleware(['auth'])->group(function () {
     
     // ===== IT ONLY =====
     Route::middleware(['role:it'])->group(function () {
+        // User Management
         Route::get('/user-management', [UserManagementController::class, 'index'])->name('user_management.index');
+        Route::get('/api/users', [UserManagementController::class, 'getUsers'])->name('user_management.list');
+        Route::post('/api/users', [UserManagementController::class, 'store'])->name('user_management.store');
+        Route::put('/api/users/{id}', [UserManagementController::class, 'update'])->name('user_management.update');
+        Route::delete('/api/users/{id}', [UserManagementController::class, 'destroy'])->name('user_management.destroy');
+        
+        // Supplier Management
         Route::get('/supplier-management', [SupplierManagementController::class, 'index'])->name('supplier_management.index');
     });
     

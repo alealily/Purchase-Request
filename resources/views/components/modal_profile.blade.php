@@ -58,6 +58,22 @@
             </span>
         </div>
         
+        {{-- Department & Division Info --}}
+        <div class="mt-3 text-sm text-gray-600 space-y-1">
+            @if(!empty($user->department) && $user->department !== '-')
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-building text-gray-400 w-4"></i>
+                    <span>{{ $user->department }}</span>
+                </div>
+            @endif
+            @if(!empty($user->division) && $user->division !== '-')
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-sitemap text-gray-400 w-4"></i>
+                    <span>{{ $user->division }}</span>
+                </div>
+            @endif
+        </div>
+        
         {{-- Logout Button --}}
         <div class="mt-5">
             <form action="{{ route('logout') }}" method="POST">

@@ -13,7 +13,7 @@
     @vite('resources/css/app.css')
     @vite('resources/js/app.js')
 </head>
-<body class="font-poppins">
+<body class="font-poppins overflow-x-hidden">
     {{-- Halaman konten --}}
     @yield('content')
 

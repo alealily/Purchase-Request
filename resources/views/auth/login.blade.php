@@ -79,8 +79,8 @@
                                     class="fa-solid fa-user text-gray-400"></i> </span>
                         </div>
                     </div>
-                    <div> <label for="passwordInput" class="block text-sm font-semibold text-gray-700">Kata
-                            Sandi</label>
+                    <div> <label for="passwordInput" class="block text-sm font-semibold text-gray-700">Password
+                        </label>
                         <div class="relative mt-1"> <input type="password" id="passwordInput" name="password"
                                 placeholder="Enter your password"
                                 class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 pr-10" required>
@@ -90,7 +90,7 @@
                     </div>
                     <div> <button type="submit" id="loginButton"
                             class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-semibold text-white bg-[#187FC4] hover:bg-[#156ca7] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300">
-                            MASUK </button> </div>
+                            LOGIN </button> </div>
                 </form>
                 <div class="text-center">
                     <p class="text-xs text-gray-500"> By clicking log in, you agree to our Terms and that you have read
@@ -103,12 +103,12 @@
     <!-- Modal Choose Role -->
     <div id="roleModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
         <div id="modalContent"
-            class="bg-white rounded-2xl shadow-lg w-[90%] max-w-xl p-8 relative transform scale-95 opacity-0 transition-all duration-300">
+            class="bg-white rounded-2xl shadow-lg w-[90%] max-w-xl px-8 py-6 relative transform scale-95 opacity-0 transition-all duration-300">
 
             <!-- Header -->
-            <div class="flex justify-between items-center border-b pb-3 mb-6">
-                <h2 class="text-lg font-semibold text-center w-full -ml-6">Choose Role</h2>
-                <button id="closeModalButton" class="absolute right-6 top-5 text-gray-500 hover:text-gray-700">
+            <div class="relative border-b border-gray-200 pb-4 mb-4">
+                <h2 class="text-xl font-bold text-center text-gray-800">Choose Role</h2>
+                <button id="closeModalButton" class="absolute right-0 top-0 text-gray-400 hover:text-gray-600 transition">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
@@ -148,45 +148,8 @@
         </div>
     </div>
 
-    <style>
-        .role-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 8rem;
-            /* ukuran seragam */
-            height: 8rem;
-            background-color: #fff;
-            border: 2px solid #e5e7eb;
-            /* abu muda (#e5e7eb = gray-200) */
-            border-radius: 1rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
 
-        .role-card:hover {
-            border-color: #187FC4;
-            /* biru utama */
-            box-shadow: 0 4px 10px rgba(24, 127, 196, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .role-card i {
-            color: #374151;
-            /* abu tua */
-        }
-
-        .role-card p {
-            color: #111827;
-            /* teks hitam */
-        }
-
-        .role-card:hover i,
-        .role-card:hover p {
-            color: #187FC4;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/modal_choose_role.css') }}">
     
     <script>
         document.addEventListener('DOMContentLoaded', function () {
