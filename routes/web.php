@@ -50,6 +50,7 @@ Route::middleware(['auth'])->group(function () {
         // User Management (full CRUD)
         Route::prefix('user-management')->name('user_management.')->group(function () {
             Route::get('/', [UserManagementController::class, 'index'])->name('index');
+            Route::get('/export', [UserManagementController::class, 'export'])->name('export');
             Route::get('/create', [UserManagementController::class, 'create'])->name('create');
             Route::post('/', [UserManagementController::class, 'store'])->name('store');
             Route::get('/{id}', [UserManagementController::class, 'show'])->name('show');
@@ -58,8 +59,17 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/{id}', [UserManagementController::class, 'destroy'])->name('destroy');
         });
         
-        // Supplier Management
-        Route::get('/supplier-management', [SupplierManagementController::class, 'index'])->name('supplier_management.index');
+        // Supplier Management (full CRUD)
+        Route::prefix('supplier-management')->name('supplier_management.')->group(function () {
+            Route::get('/', [SupplierManagementController::class, 'index'])->name('index');
+            Route::get('/export', [SupplierManagementController::class, 'export'])->name('export');
+            Route::get('/create', [SupplierManagementController::class, 'create'])->name('create');
+            Route::post('/', [SupplierManagementController::class, 'store'])->name('store');
+            Route::get('/{id}', [SupplierManagementController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [SupplierManagementController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [SupplierManagementController::class, 'update'])->name('update');
+            Route::delete('/{id}', [SupplierManagementController::class, 'destroy'])->name('destroy');
+        });
     });
     
 });

@@ -29,6 +29,20 @@ class PRDetailController extends Controller
         $userRole = strtolower($user->role ?? '');
         $search = $request->query('search');
         
+        // Filter parameters
+        $filters = [
+            'status' => $request->query('status'),
+            'material' => $request->query('material'),
+            'supplier' => $request->query('supplier'),
+            'user_filter' => $request->query('user_filter'),
+            'department' => $request->query('department'),
+            'quantity' => $request->query('quantity'),
+            'unit_price' => $request->query('unit_price'),
+            'total_cost' => $request->query('total_cost'),
+            'date_from' => $request->query('date_from'),
+            'date_to' => $request->query('date_to'),
+        ];
+        
         // Build query based on role
         $prQuery = PurchaseRequest::with(['prDetails.supplier', 'user', 'approvals']);
         
@@ -90,13 +104,59 @@ class PRDetailController extends Controller
             });
         }
         
+        // Apply server-side filters
+        if ($filters['status']) {
+            $prQuery->where('status', 'like', '%' . $filters['status'] . '%');
+        }
+        if ($filters['material']) {
+            $prQuery->whereHas('prDetails', function($q) use ($filters) {
+                $q->where('material_desc', 'like', '%' . $filters['material'] . '%');
+            });
+        }
+        if ($filters['supplier']) {
+            $prQuery->whereHas('prDetails.supplier', function($q) use ($filters) {
+                $q->where('name', 'like', '%' . $filters['supplier'] . '%');
+            });
+        }
+        if ($filters['user_filter']) {
+            $prQuery->whereHas('user', function($q) use ($filters) {
+                $q->where('name', 'like', '%' . $filters['user_filter'] . '%');
+            });
+        }
+        if ($filters['department']) {
+            $prQuery->whereHas('user', function($q) use ($filters) {
+                $q->where('department', 'like', '%' . $filters['department'] . '%');
+            });
+        }
+        if ($filters['quantity']) {
+            $prQuery->whereHas('prDetails', function($q) use ($filters) {
+                $q->where('quantity', '>=', (int) $filters['quantity']);
+            });
+        }
+        if ($filters['unit_price']) {
+            $prQuery->whereHas('prDetails', function($q) use ($filters) {
+                $q->where('unit_price', '>=', (int) $filters['unit_price']);
+            });
+        }
+        if ($filters['total_cost']) {
+            $prQuery->whereHas('prDetails', function($q) use ($filters) {
+                $q->where('total_cost', '>=', (int) $filters['total_cost']);
+            });
+        }
+        if ($filters['date_from']) {
+            $prQuery->whereDate('created_at', '>=', $filters['date_from']);
+        }
+        if ($filters['date_to']) {
+            $prQuery->whereDate('created_at', '<=', $filters['date_to']);
+        }
+        
         // Get all PRs with ordering and pagination (4 per page)
         $purchaseRequests = $prQuery->orderBy('created_at', 'desc')->paginate(4);
         
-        // Preserve search in pagination links
-        $purchaseRequests->appends(['search' => $search]);
+        // Preserve search and filters in pagination links
+        $purchaseRequests->appends(array_merge(['search' => $search], $filters));
         
-        return view('pr_detail.index', compact('purchaseRequests', 'search'));
+        return view('pr_detail.index', compact('purchaseRequests', 'search', 'filters'));
     }
 
     /**

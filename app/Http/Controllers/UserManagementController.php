@@ -217,4 +217,14 @@ class UserManagementController extends Controller
 
         return $roleMap[$role] ?? 'staff';
     }
+
+    /**
+     * Export users to Excel
+     */
+    public function export()
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $filename = 'UserManagement_' . date('dmY_His') . '.xlsx';
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\UserExport, $filename);
+    }
 }

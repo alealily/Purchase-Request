@@ -44,8 +44,8 @@
         <!-- Supplier Management -->
         <a href="{{ route('supplier_management.index') }}"
            class="flex items-center gap-3 py-3 px-4 rounded-lg font-semibold
-           {{ request()->routeIs('supplier_management.index') ? 'bg-[#187FC4] text-white' : 'text-black hover:bg-gray-100' }}">
-            <i class="fa-solid fa-users"></i>
+           {{ request()->routeIs('supplier_management.*') ? 'bg-[#187FC4] text-white' : 'text-black hover:bg-gray-100' }}">
+            <i class="fa-solid fa-truck"></i>
             Supplier Management
         </a>
 

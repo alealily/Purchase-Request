@@ -205,44 +205,55 @@
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
-                    <div class="flex-1 overflow-y-auto px-6 py-4">
-                        <form id="filterForm" class="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
-                            <div><label class="text-sm font-semibold">Status</label><select id="statusFilter"
-                                    class="border w-full border-gray-300 px-3 py-2 rounded-lg">
-                                    <option value="">All</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Approve">Approve</option>
-                                    <option value="Reject">Reject</option>
-                                    <option value="Revision">Revision</option>
-                                </select></div>
-                            <div><label class="text-sm font-semibold">Material Desc</label><input type="text"
-                                    id="materialDescFilter" placeholder="e.g. Laptop Lenovo"
-                                    class="border w-full border-gray-300 px-3 py-2 rounded-lg placeholder:italic"></div>
-                            <div><label class="text-sm font-semibold">Supplier</label><input type="text" id="supplierFilter"
-                                    placeholder="e.g. CBR Elektronik"
-                                    class="border w-full border-gray-300 px-3 py-2 rounded-lg placeholder:italic"></div>
-                            <div><label class="text-sm font-semibold">Quantity</label><input type="number"
-                                    id="quantityFilter" placeholder="e.g. >= 10"
-                                    class="border w-full border-gray-300 px-3 py-2 rounded-lg"></div>
-                            <div><label class="text-sm font-semibold">Unit Price</label><input type="number"
-                                    id="unitPriceFilter" placeholder="e.g. <= 100000"
-                                    class="border w-full border-gray-300 px-3 py-2 rounded-lg"></div>
-                            <div><label class="text-sm font-semibold">Total Cost</label><input type="number"
-                                    id="totalCostFilter" placeholder="e.g. >= 1000000"
-                                    class="border w-full border-gray-300 px-3 py-2 rounded-lg"></div>
-                            <div class="col-span-2"><label class="text-sm font-semibold">Created At (From - To)</label>
-                                <div class="flex gap-6 mt-1"><input type="date" id="createdFrom"
-                                        class="border w-1/2 border-gray-300 px-3 py-2 rounded-lg"><input type="date"
-                                        id="createdTo" class="border w-1/2 border-gray-300 px-3 py-2 rounded-lg"></div>
+                    <form action="{{ route('purchase_request.index') }}" method="GET" id="filterForm">
+                        <div class="flex-1 overflow-y-auto px-6 py-4">
+                            <div class="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                                <div><label class="text-sm font-semibold">Status</label>
+                                    <select name="status" class="border w-full border-gray-300 px-3 py-2 rounded-lg">
+                                        <option value="">All</option>
+                                        <option value="pending" {{ ($filters['status'] ?? '') == 'pending' ? 'selected' : '' }}>Pending</option>
+                                        <option value="approve" {{ ($filters['status'] ?? '') == 'approve' ? 'selected' : '' }}>Approve</option>
+                                        <option value="reject" {{ ($filters['status'] ?? '') == 'reject' ? 'selected' : '' }}>Reject</option>
+                                        <option value="revision" {{ ($filters['status'] ?? '') == 'revision' ? 'selected' : '' }}>Revision</option>
+                                    </select>
+                                </div>
+                                <div><label class="text-sm font-semibold">Material Desc</label>
+                                    <input type="text" name="material" value="{{ $filters['material'] ?? '' }}" placeholder="e.g. Laptop Lenovo"
+                                        class="border w-full border-gray-300 px-3 py-2 rounded-lg placeholder:italic">
+                                </div>
+                                <div><label class="text-sm font-semibold">Supplier</label>
+                                    <input type="text" name="supplier" value="{{ $filters['supplier'] ?? '' }}" placeholder="e.g. CBR Elektronik"
+                                        class="border w-full border-gray-300 px-3 py-2 rounded-lg placeholder:italic">
+                                </div>
+                                <div><label class="text-sm font-semibold">Quantity (>=)</label>
+                                    <input type="number" name="quantity" value="{{ $filters['quantity'] ?? '' }}" placeholder="e.g. >= 10"
+                                        class="border w-full border-gray-300 px-3 py-2 rounded-lg">
+                                </div>
+                                <div><label class="text-sm font-semibold">Unit Price (>=)</label>
+                                    <input type="number" name="unit_price" value="{{ $filters['unit_price'] ?? '' }}" placeholder="e.g. >= 100000"
+                                        class="border w-full border-gray-300 px-3 py-2 rounded-lg">
+                                </div>
+                                <div><label class="text-sm font-semibold">Total Cost (>=)</label>
+                                    <input type="number" name="total_cost" value="{{ $filters['total_cost'] ?? '' }}" placeholder="e.g. >= 1000000"
+                                        class="border w-full border-gray-300 px-3 py-2 rounded-lg">
+                                </div>
+                                <div class="col-span-2"><label class="text-sm font-semibold">Created At (From - To)</label>
+                                    <div class="flex gap-6 mt-1">
+                                        <input type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}"
+                                            class="border w-1/2 border-gray-300 px-3 py-2 rounded-lg">
+                                        <input type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}"
+                                            class="border w-1/2 border-gray-300 px-3 py-2 rounded-lg">
+                                    </div>
+                                </div>
                             </div>
-                        </form>
-                    </div>
-                    <div class="flex justify-end gap-6 border-t border-gray-200 px-6 py-4 bg-gray-50">
-                        <button type="button" id="resetFilter"
-                            class="px-6 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 font-semibold transition">Reset</button>
-                        <button type="button" id="applyFilter"
-                            class="px-6 py-2 bg-[#187FC4] text-white rounded-lg font-semibold hover:bg-[#156ca7] transition">Apply</button>
-                    </div>
+                        </div>
+                        <div class="flex justify-end gap-6 border-t border-gray-200 px-6 py-4 bg-gray-50">
+                            <a href="{{ route('purchase_request.index') }}"
+                                class="px-6 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 font-semibold transition">Reset</a>
+                            <button type="submit"
+                                class="px-6 py-2 bg-[#187FC4] text-white rounded-lg font-semibold hover:bg-[#156ca7] transition">Apply</button>
+                        </div>
+                    </form>
                 </div>
             </dialog>
 
@@ -284,116 +295,14 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Elements
-            const tableBody = document.getElementById('tableBody');
             const filterModal = document.getElementById('filterModal');
             const filterBtn = document.getElementById('filterBtn');
             const closeFilterBtn = document.getElementById('closeFilterBtn');
-            const applyFilter = document.getElementById('applyFilter');
-            const resetFilter = document.getElementById('resetFilter');
             const exportBtn = document.getElementById('exportBtn');
 
-            // Filter Modal
+            // Filter Modal - only open/close handling
             filterBtn.addEventListener('click', () => filterModal.showModal());
             closeFilterBtn.addEventListener('click', () => filterModal.close());
-            
-            // Apply Filter
-            applyFilter.addEventListener('click', () => { 
-                // Get all filter values
-                const statusFilter = document.getElementById('statusFilter')?.value?.toLowerCase() || '';
-                const materialFilter = document.getElementById('materialDescFilter')?.value?.toLowerCase() || '';
-                const supplierFilter = document.getElementById('supplierFilter')?.value?.toLowerCase() || '';
-                const quantityFilter = parseInt(document.getElementById('quantityFilter')?.value) || 0;
-                const unitPriceFilter = parseInt(document.getElementById('unitPriceFilter')?.value) || 0;
-                const totalCostFilter = parseInt(document.getElementById('totalCostFilter')?.value) || 0;
-                const createdFrom = document.getElementById('createdFrom')?.value || '';
-                const createdTo = document.getElementById('createdTo')?.value || '';
-                
-                const rows = tableBody.querySelectorAll('tr');
-                
-                rows.forEach(row => {
-                    if (row.querySelector('td[colspan]')) return; // Skip empty state
-                    
-                    const cells = row.querySelectorAll('td');
-                    const status = row.getAttribute('data-status')?.toLowerCase() || '';
-                    const material = cells[2]?.textContent?.toLowerCase() || '';
-                    const supplier = cells[9]?.textContent?.toLowerCase() || '';
-                    const quantity = parseInt(cells[6]?.textContent?.replace(/[,.]/g, '')) || 0;
-                    const unitPrice = parseInt(cells[4]?.textContent?.replace(/[,.]/g, '')) || 0;
-                    const totalCost = parseInt(cells[7]?.textContent?.replace(/[,.]/g, '')) || 0;
-                    const createdAt = cells[8]?.textContent || ''; // Format: dd-mm-yyyy
-                    
-                    let match = true;
-                    
-                    // Status filter
-                    if (statusFilter && !status.includes(statusFilter)) {
-                        match = false;
-                    }
-                    
-                    // Material filter (contains)
-                    if (materialFilter && !material.includes(materialFilter)) {
-                        match = false;
-                    }
-                    
-                    // Supplier filter (contains)
-                    if (supplierFilter && !supplier.includes(supplierFilter)) {
-                        match = false;
-                    }
-                    
-                    // Quantity filter (>=)
-                    if (quantityFilter > 0 && quantity < quantityFilter) {
-                        match = false;
-                    }
-                    
-                    // Unit Price filter (>=)
-                    if (unitPriceFilter > 0 && unitPrice < unitPriceFilter) {
-                        match = false;
-                    }
-                    
-                    // Total Cost filter (>=)
-                    if (totalCostFilter > 0 && totalCost < totalCostFilter) {
-                        match = false;
-                    }
-                    
-                    // Date range filter
-                    if (createdFrom || createdTo) {
-                        // Convert dd-mm-yyyy to Date object
-                        const parts = createdAt.split('-');
-                        if (parts.length === 3) {
-                            const rowDate = new Date(parts[2], parts[1] - 1, parts[0]); // yyyy, mm(0-indexed), dd
-                            
-                            if (createdFrom) {
-                                const fromDate = new Date(createdFrom);
-                                if (rowDate < fromDate) match = false;
-                            }
-                            
-                            if (createdTo) {
-                                const toDate = new Date(createdTo);
-                                if (rowDate > toDate) match = false;
-                            }
-                        }
-                    }
-                    
-                    row.style.display = match ? '' : 'none';
-                });
-                
-                // Check if any visible rows
-                const visibleRows = Array.from(tableBody.querySelectorAll('tr')).filter(r => 
-                    r.style.display !== 'none' && !r.querySelector('td[colspan]') && r.id !== 'noResultsRow'
-                );
-                document.getElementById('noResultsRow').style.display = visibleRows.length === 0 ? '' : 'none';
-                
-                filterModal.close(); 
-            });
-            
-            // Reset Filter
-            resetFilter.addEventListener('click', () => { 
-                document.getElementById('filterForm').reset(); 
-                tableBody.querySelectorAll('tr').forEach(row => {
-                    if (row.id !== 'noResultsRow') row.style.display = '';
-                });
-                document.getElementById('noResultsRow').style.display = 'none';
-                filterModal.close(); 
-            });
 
             // Export to Excel
             exportBtn.addEventListener('click', () => {

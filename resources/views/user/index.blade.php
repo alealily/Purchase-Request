@@ -95,10 +95,10 @@
                         @endif
                     </form>
                     <div class="flex items-center gap-3">
-                        <button id="exportBtn"
+                        <a href="{{ route('user_management.export') }}"
                             class="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm font-medium">
                             <i class="fa-solid fa-file-export"></i> Export
-                        </button>
+                        </a>
                         <a href="{{ route('user_management.create') }}"
                             class="px-5 py-2 bg-[#187FC4] text-white rounded-lg hover:bg-[#156ca7] text-sm font-semibold cursor-pointer">
                             Add User
@@ -108,7 +108,7 @@
 
                 {{-- Table --}}
                 <div class="max-w-full overflow-x-auto rounded-lg border border-gray-200">
-                    <table class="min-w-[1300px] w-full text-sm text-black">
+                    <table class="min-w-[1000px] w-full text-sm text-black">
                         <thead class="bg-gray-100 text-black text-sm uppercase">
                             <tr>
                                 <th class="text-left px-4 py-3">Name</th>
@@ -129,7 +129,7 @@
                                     $badgeClass = $roleColorsMap[$roleLower] ?? 'bg-gray-200 text-gray-700';
                                 @endphp
                                 <tr class="border-b border-gray-100 hover:bg-gray-50 data-row">
-                                    <td class="px-4 py-3">{{ $user->name }}</td>
+                                    <td class="px-4 py-3 max-w-[120px] truncate" title="{{ $user->name }}">{{ $user->name }}</td>
                                     <td class="px-4 py-3">{{ $user->badge }}</td>
                                     <td class="px-4 py-3">{{ $user->email }}</td>
                                     <td class="px-4 py-3">
@@ -144,7 +144,7 @@
                                             <span class="px-3 py-1 bg-[#6E6D6D] text-white rounded-lg text-xs font-semibold">Inactive</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-3">{{ $user->department ?? '-' }}</td>
+                                    <td class="px-4 py-3 max-w-[100px] truncate" title="{{ $user->department ?? '-' }}">{{ $user->department ?? '-' }}</td>
                                     <td class="px-4 py-3">{{ $user->division ?? '-' }}</td>
                                     <td class="px-4 py-3">
                                         <div class="flex items-center justify-center gap-2">
@@ -200,37 +200,4 @@
             </div>
         </div>
     </div>
-
-    {{-- Scripts --}}
-    <script>
-        // Export to CSV
-        document.getElementById('exportBtn').addEventListener('click', function() {
-            const rows = document.querySelectorAll('.data-row');
-            let csv = 'Name,Badge,Email,Role,Status,Department,Division\n';
-            
-            rows.forEach(row => {
-                if (row.style.display !== 'none') {
-                    const cells = row.querySelectorAll('td');
-                    const rowData = [
-                        cells[0].textContent.trim(),
-                        cells[1].textContent.trim(),
-                        cells[2].textContent.trim(),
-                        cells[3].textContent.trim(),
-                        cells[4].textContent.trim(),
-                        cells[5].textContent.trim(),
-                        cells[6].textContent.trim()
-                    ];
-                    csv += rowData.map(d => `"${d}"`).join(',') + '\n';
-                }
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'users_export.csv';
-            a.click();
-            window.URL.revokeObjectURL(url);
-        });
-    </script>
 @endsection

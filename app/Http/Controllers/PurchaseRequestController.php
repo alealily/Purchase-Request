@@ -18,11 +18,23 @@ class PurchaseRequestController extends Controller
     }
 
     /**
-     * Display a listing of the resource with search.
+     * Display a listing of the resource with search and filters.
      */
     public function index(Request $request)
     {
         $search = $request->query('search');
+        
+        // Filter parameters
+        $filters = [
+            'status' => $request->query('status'),
+            'material' => $request->query('material'),
+            'supplier' => $request->query('supplier'),
+            'quantity' => $request->query('quantity'),
+            'unit_price' => $request->query('unit_price'),
+            'total_cost' => $request->query('total_cost'),
+            'date_from' => $request->query('date_from'),
+            'date_to' => $request->query('date_to'),
+        ];
         
         // Only show PRs created by the logged-in user with pagination (4 per page)
         $query = PurchaseRequest::with(['prDetails.supplier', 'user'])
@@ -41,12 +53,48 @@ class PurchaseRequestController extends Controller
             });
         }
         
+        // Apply server-side filters
+        if ($filters['status']) {
+            $query->where('status', 'like', '%' . $filters['status'] . '%');
+        }
+        if ($filters['material']) {
+            $query->whereHas('prDetails', function($q) use ($filters) {
+                $q->where('material_desc', 'like', '%' . $filters['material'] . '%');
+            });
+        }
+        if ($filters['supplier']) {
+            $query->whereHas('prDetails.supplier', function($q) use ($filters) {
+                $q->where('name', 'like', '%' . $filters['supplier'] . '%');
+            });
+        }
+        if ($filters['quantity']) {
+            $query->whereHas('prDetails', function($q) use ($filters) {
+                $q->where('quantity', '>=', (int) $filters['quantity']);
+            });
+        }
+        if ($filters['unit_price']) {
+            $query->whereHas('prDetails', function($q) use ($filters) {
+                $q->where('unit_price', '>=', (int) $filters['unit_price']);
+            });
+        }
+        if ($filters['total_cost']) {
+            $query->whereHas('prDetails', function($q) use ($filters) {
+                $q->where('total_cost', '>=', (int) $filters['total_cost']);
+            });
+        }
+        if ($filters['date_from']) {
+            $query->whereDate('created_at', '>=', $filters['date_from']);
+        }
+        if ($filters['date_to']) {
+            $query->whereDate('created_at', '<=', $filters['date_to']);
+        }
+        
         $pr = $query->orderBy('created_at', 'desc')->paginate(4);
         
-        // Preserve search in pagination links
-        $pr->appends(['search' => $search]);
+        // Preserve search and filters in pagination links
+        $pr->appends(array_merge(['search' => $search], $filters));
         
-        return view('purchase_request.index', compact('pr', 'search'));
+        return view('purchase_request.index', compact('pr', 'search', 'filters'));
     }
 
     /**

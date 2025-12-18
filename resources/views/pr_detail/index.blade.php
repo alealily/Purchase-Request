@@ -85,7 +85,7 @@
                                     ];
                                     $badgeClass = $statusColors[$status] ?? 'bg-gray-200 text-gray-800';
                                 @endphp
-                                <tr class="hover:bg-gray-50 data-row">
+                                <tr class="hover:bg-gray-50 data-row" data-status="{{ $status }}">
                                     <td class="px-4 py-2">{{ $pr->pr_number }}</td>
                                     <td class="px-4 py-2">
                                         <span class="{{ $badgeClass }} px-3 py-1 rounded-full text-xs font-semibold">
@@ -137,28 +137,84 @@
         </div>
     </div>
 
+    {{-- Filter Modal --}}
+    <dialog id="filterModal" class="rounded-lg shadow-lg w-[800px] max-h-[90vh] overflow-hidden p-0 backdrop:bg-black/40">
+        <div class="bg-white rounded-lg flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center border-b border-gray-300 px-6 py-4">
+                <h1 class="text-2xl font-bold">Filter</h1>
+                <button type="button" id="closeFilterBtn" class="text-gray-500 hover:text-black text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form action="{{ route('pr_detail.index') }}" method="GET" id="filterForm">
+                <div class="flex-1 overflow-y-auto px-6 py-4">
+                    <div class="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                        <div><label class="text-sm font-semibold">Status</label>
+                            <select name="status" class="border w-full border-gray-300 px-3 py-2 rounded-lg">
+                                <option value="">All</option>
+                                <option value="pending" {{ ($filters['status'] ?? '') == 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="approve" {{ ($filters['status'] ?? '') == 'approve' ? 'selected' : '' }}>Approve</option>
+                                <option value="reject" {{ ($filters['status'] ?? '') == 'reject' ? 'selected' : '' }}>Reject</option>
+                                <option value="revision" {{ ($filters['status'] ?? '') == 'revision' ? 'selected' : '' }}>Revision</option>
+                            </select>
+                        </div>
+                        <div><label class="text-sm font-semibold">Material Desc</label>
+                            <input type="text" name="material" value="{{ $filters['material'] ?? '' }}" placeholder="e.g. Laptop Lenovo"
+                                class="border w-full border-gray-300 px-3 py-2 rounded-lg placeholder:italic">
+                        </div>
+                        <div><label class="text-sm font-semibold">Supplier</label>
+                            <input type="text" name="supplier" value="{{ $filters['supplier'] ?? '' }}" placeholder="e.g. CBR Elektronik"
+                                class="border w-full border-gray-300 px-3 py-2 rounded-lg placeholder:italic">
+                        </div>
+                        <div><label class="text-sm font-semibold">User</label>
+                            <input type="text" name="user_filter" value="{{ $filters['user_filter'] ?? '' }}" placeholder="e.g. John Doe"
+                                class="border w-full border-gray-300 px-3 py-2 rounded-lg placeholder:italic">
+                        </div>
+                        <div><label class="text-sm font-semibold">Department</label>
+                            <input type="text" name="department" value="{{ $filters['department'] ?? '' }}" placeholder="e.g. IT"
+                                class="border w-full border-gray-300 px-3 py-2 rounded-lg placeholder:italic">
+                        </div>
+                        <div><label class="text-sm font-semibold">Quantity (>=)</label>
+                            <input type="number" name="quantity" value="{{ $filters['quantity'] ?? '' }}" placeholder="e.g. >= 10"
+                                class="border w-full border-gray-300 px-3 py-2 rounded-lg">
+                        </div>
+                        <div><label class="text-sm font-semibold">Unit Price (>=)</label>
+                            <input type="number" name="unit_price" value="{{ $filters['unit_price'] ?? '' }}" placeholder="e.g. >= 100000"
+                                class="border w-full border-gray-300 px-3 py-2 rounded-lg">
+                        </div>
+                        <div><label class="text-sm font-semibold">Total Cost (>=)</label>
+                            <input type="number" name="total_cost" value="{{ $filters['total_cost'] ?? '' }}" placeholder="e.g. >= 1000000"
+                                class="border w-full border-gray-300 px-3 py-2 rounded-lg">
+                        </div>
+                        <div class="col-span-2"><label class="text-sm font-semibold">Created At (From - To)</label>
+                            <div class="flex gap-6 mt-1">
+                                <input type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}"
+                                    class="border w-1/2 border-gray-300 px-3 py-2 rounded-lg">
+                                <input type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}"
+                                    class="border w-1/2 border-gray-300 px-3 py-2 rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-6 border-t border-gray-200 px-6 py-4 bg-gray-50">
+                    <a href="{{ route('pr_detail.index') }}"
+                        class="px-6 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 font-semibold transition">Reset</a>
+                    <button type="submit"
+                        class="px-6 py-2 bg-[#187FC4] text-white rounded-lg font-semibold hover:bg-[#156ca7] transition">Apply</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
     <script>
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('keyup', function() {
-            const searchTerm = this.value.toLowerCase();
-            const rows = document.querySelectorAll('.data-row');
-            let visibleCount = 0;
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-            
-            // Show/hide no results message
-            const noResultsRow = document.getElementById('noResultsRow');
-            if (noResultsRow) {
-                noResultsRow.style.display = visibleCount === 0 ? '' : 'none';
-            }
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterBtn = document.getElementById('filterBtn');
+            const filterModal = document.getElementById('filterModal');
+            const closeFilterBtn = document.getElementById('closeFilterBtn');
+
+            // Filter Modal - only open/close handling
+            filterBtn.addEventListener('click', () => filterModal.showModal());
+            closeFilterBtn.addEventListener('click', () => filterModal.close());
         });
     </script>
 @endsection
