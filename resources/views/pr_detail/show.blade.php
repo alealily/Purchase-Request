@@ -190,12 +190,18 @@
                     <p class="text-gray-400 italic">No quotation files uploaded</p>
                 @endif
 
-                {{-- Back Button --}}
-                <div class="flex justify-start items-center mt-8 pt-6 border-t border-gray-200">
+                {{-- Back Button + Download PDF --}}
+                <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
                     <a href="{{ route('pr_detail.index') }}" 
                        class="px-6 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 font-semibold transition">
                         <i class="fa-solid fa-arrow-left mr-2"></i> Back to List
                     </a>
+                    @if(strtolower($pr->status) === 'approve')
+                        <a href="{{ route('pr_detail.pdf', $pr->id_pr) }}" 
+                           class="px-6 py-2 bg-[#E20030] text-white rounded-lg hover:bg-[#C0002A] font-semibold transition">
+                            <i class="fa-solid fa-file-pdf mr-2"></i> Download PDF
+                        </a>
+                    @endif
                 </div>
             </div>
 

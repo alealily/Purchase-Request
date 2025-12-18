@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
 use App\Models\Approval;
 use App\Services\ApprovalWorkflowService;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PRDetailController extends Controller
 {
@@ -197,6 +198,50 @@ class PRDetailController extends Controller
         $canApprove = $this->approvalService->canUserApprove($user, $pr);
         
         return view('pr_detail.show', compact('pr', 'approvalHistory', 'canApprove'));
+    }
+
+    /**
+     * Generate PDF document for approved PR
+     */
+    public function generatePdf(string $id)
+    {
+        $pr = PurchaseRequest::with(['prDetails.supplier', 'user', 'approvals.user'])
+                            ->findOrFail($id);
+        
+        // Only allow PDF generation for approved PRs
+        if (strtolower($pr->status) !== 'approve') {
+            return redirect()
+                ->route('pr_detail.show', $id)
+                ->with('error', 'PDF can only be generated for approved Purchase Requests.');
+        }
+        
+        $user = auth()->user();
+        $userRole = strtolower($user->role ?? '');
+        $superiorRoles = ['head of department', 'head of division', 'general manager', 'president director'];
+        
+        // Check access rights (same as show)
+        $canView = false;
+        if ($userRole === 'it') {
+            $canView = true;
+        } elseif (in_array($userRole, $superiorRoles)) {
+            $canView = $pr->approvals->contains('id_user', $user->id_user);
+        } elseif ($pr->id_user === $user->id_user) {
+            $canView = true;
+        }
+        
+        if (!$canView) {
+            return redirect()
+                ->route('pr_detail.index')
+                ->with('error', 'You are not authorized to generate PDF for this Purchase Request.');
+        }
+        
+        // Get approval history for signatures
+        $approvalHistory = $this->approvalService->getApprovalHistory($pr);
+        
+        $pdf = Pdf::loadView('pr_detail.pdf', compact('pr', 'approvalHistory'));
+        $pdf->setPaper('A4', 'portrait');
+        
+        return $pdf->download('PR-' . $pr->pr_number . '.pdf');
     }
 }
 

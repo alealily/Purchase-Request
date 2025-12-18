@@ -35,6 +35,7 @@ Route::middleware(['auth'])->group(function () {
     // PR Detail (All roles)
     Route::get('/pr-detail', [PRDetailController::class, 'index'])->name('pr_detail.index');
     Route::get('/pr-detail/{id}', [PRDetailController::class, 'show'])->name('pr_detail.show');
+    Route::get('/pr-detail/{id}/pdf', [PRDetailController::class, 'generatePdf'])->name('pr_detail.pdf');
     
     // ===== SUPERIOR ONLY =====
     Route::middleware(['role:superior'])->group(function () {
