@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="flex bg-[#F4F5FA] min-h-screen">
+    <div class="flex bg-[#F2F1F1] min-h-screen">
         {{-- Sidebar (dynamic based on role) --}}
         @php
             $userRole = strtolower(auth()->user()->role ?? '');
             $superiorRoles = ['head of department', 'head of division', 'president director', 'general manager'];
             $isSuperior = in_array($userRole, $superiorRoles);
         @endphp
-        <aside class="w-64 bg-white h-screen sticky top-0">
+        <aside class="w-64 flex-shrink-0">
             @if($userRole === 'it')
                 @include('components.it_sidebar')
             @elseif($isSuperior)
@@ -31,11 +31,11 @@
 
             <div class="bg-white p-6 rounded-2xl shadow-sm">
                 <div class="flex items-center justify-between mb-6">
-                    <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-1/3">
+                    <form action="{{ route('pr_detail.index') }}" method="GET" class="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-1/3">
                         <i class="fa-solid fa-search text-gray-400 mr-2"></i>
-                        <input type="text" id="searchInput" placeholder="Search purchase request"
+                        <input type="text" name="search" placeholder="Search purchase request" value="{{ $search ?? '' }}"
                             class="w-full focus:outline-none text-sm text-gray-600">
-                    </div>
+                    </form>
 
                     <div class="flex items-center gap-3">
                         <button id="filterBtn"
@@ -126,6 +126,13 @@
                         </tbody>
                     </table>
                 </div>
+                
+                {{-- Pagination Links --}}
+                @if($purchaseRequests->hasPages())
+                    <div class="mt-6 flex justify-center">
+                        {{ $purchaseRequests->links() }}
+                    </div>
+                @endif
             </div>
         </div>
     </div>

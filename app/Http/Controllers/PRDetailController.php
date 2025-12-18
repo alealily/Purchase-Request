@@ -23,10 +23,11 @@ class PRDetailController extends Controller
      * - IT: Can see ALL PRs
      * - Employee: Can see their own PRs (for tracking)
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         $userRole = strtolower($user->role ?? '');
+        $search = $request->query('search');
         
         // Build query based on role
         $prQuery = PurchaseRequest::with(['prDetails.supplier', 'user', 'approvals']);
@@ -73,10 +74,29 @@ class PRDetailController extends Controller
             $prQuery->where('id_user', $user->id_user);
         }
         
-        // Get all PRs with ordering
-        $purchaseRequests = $prQuery->orderBy('created_at', 'desc')->get();
+        // Apply search filter if provided
+        if ($search) {
+            $prQuery->where(function($q) use ($search) {
+                $q->where('pr_number', 'like', '%' . $search . '%')
+                  ->orWhereHas('prDetails', function($prDetail) use ($search) {
+                      $prDetail->where('material_desc', 'like', '%' . $search . '%');
+                  })
+                  ->orWhereHas('prDetails.supplier', function($supplier) use ($search) {
+                      $supplier->where('name', 'like', '%' . $search . '%');
+                  })
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', '%' . $search . '%');
+                  });
+            });
+        }
         
-        return view('pr_detail.index', compact('purchaseRequests'));
+        // Get all PRs with ordering and pagination (4 per page)
+        $purchaseRequests = $prQuery->orderBy('created_at', 'desc')->paginate(4);
+        
+        // Preserve search in pagination links
+        $purchaseRequests->appends(['search' => $search]);
+        
+        return view('pr_detail.index', compact('purchaseRequests', 'search'));
     }
 
     /**

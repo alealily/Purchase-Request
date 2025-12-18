@@ -39,10 +39,9 @@ class DashboardController extends Controller
         $approvedCount = (clone $prQuery)->whereIn('status', ['approve', 'approved'])->count();
         $rejectedCount = (clone $prQuery)->whereIn('status', ['reject', 'rejected'])->count();
         
-        // Get recent PRs for the table
+        // Get PRs with pagination (4 per page)
         $recentPRs = $prQuery->orderBy('created_at', 'desc')
-                            ->take(10)
-                            ->get();
+                            ->paginate(4);
         
         return view('dashboard.index', compact(
             'pendingCount', 

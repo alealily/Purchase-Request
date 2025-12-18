@@ -3,14 +3,14 @@
 @section('title', 'Add Purchase Request')
 
 @section('content')
-<div class="flex bg-[#F4F5FA] min-h-screen">
+<div class="flex bg-[#F2F1F1] min-h-screen">
     {{-- Sidebar (dynamic based on role) --}}
     @php
         $userRole = strtolower(auth()->user()->role ?? '');
         $superiorRoles = ['superior', 'head of department', 'head of division', 'president director'];
         $isSuperior = in_array($userRole, $superiorRoles);
     @endphp
-    <aside class="w-64 bg-white h-screen sticky top-0">
+    <aside class="w-64 flex-shrink-0">
         @if($userRole === 'it')
             @include('components.it_sidebar')
         @elseif($isSuperior)
@@ -131,12 +131,12 @@
                     {{-- Supplier --}}
                     <div>
                         <label class="block text-sm font-semibold mb-2">Supplier *</label>
-                        <select name="id_supplier" 
-                                class="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        <select name="id_supplier" id="supplierSelect"
+                                class="w-full border border-gray-300 px-4 py-2 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
                                 required>
-                            <option value="">-- Select Supplier --</option>
+                            <option value="" disabled selected hidden>Select Supplier</option>
                             @foreach($suppliers as $supplier)
-                                <option value="{{ $supplier->id_supplier }}" {{ old('id_supplier') == $supplier->id_supplier ? 'selected' : '' }}>
+                                <option value="{{ $supplier->id_supplier }}" {{ old('id_supplier') == $supplier->id_supplier ? 'selected' : '' }} class="text-black">
                                     {{ $supplier->name }}
                                 </option>
                             @endforeach
@@ -310,6 +310,25 @@
             fileInput.files = accumulatedFiles.files;
             updateFileList();
         };
+        
+        // Handle supplier select color
+        const supplierSelect = document.getElementById('supplierSelect');
+        if (supplierSelect) {
+            supplierSelect.addEventListener('change', function() {
+                if (this.value) {
+                    this.classList.remove('text-gray-400');
+                    this.classList.add('text-black');
+                } else {
+                    this.classList.remove('text-black');
+                    this.classList.add('text-gray-400');
+                }
+            });
+            // Check on load if already has value
+            if (supplierSelect.value) {
+                supplierSelect.classList.remove('text-gray-400');
+                supplierSelect.classList.add('text-black');
+            }
+        }
     });
 </script>
 @endsection

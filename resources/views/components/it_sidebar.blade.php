@@ -1,4 +1,4 @@
-<div class="w-64 min-h-screen bg-white flex flex-col">
+<div class="w-64 h-screen bg-white flex flex-col fixed top-0 left-0 z-40">
     <!-- Logo -->
     <div class="flex items-center justify-center py-6">
         <img src="{{ asset('/storage/assets/img_logo.png') }}" alt="Logo" class="img-logo">
@@ -36,7 +36,7 @@
         <!-- User Management -->
         <a href="{{ route('user_management.index') }}"
            class="flex items-center gap-3 py-3 px-4 rounded-lg font-semibold
-           {{ request()->routeIs('user_management.index') ? 'bg-[#187FC4] text-white' : 'text-black hover:bg-gray-100' }}">
+           {{ request()->routeIs('user_management.*') ? 'bg-[#187FC4] text-white' : 'text-black hover:bg-gray-100' }}">
             <i class="fa-solid fa-users"></i>
             User Management
         </a>

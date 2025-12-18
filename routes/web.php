@@ -47,12 +47,16 @@ Route::middleware(['auth'])->group(function () {
     
     // ===== IT ONLY =====
     Route::middleware(['role:it'])->group(function () {
-        // User Management
-        Route::get('/user-management', [UserManagementController::class, 'index'])->name('user_management.index');
-        Route::get('/api/users', [UserManagementController::class, 'getUsers'])->name('user_management.list');
-        Route::post('/api/users', [UserManagementController::class, 'store'])->name('user_management.store');
-        Route::put('/api/users/{id}', [UserManagementController::class, 'update'])->name('user_management.update');
-        Route::delete('/api/users/{id}', [UserManagementController::class, 'destroy'])->name('user_management.destroy');
+        // User Management (full CRUD)
+        Route::prefix('user-management')->name('user_management.')->group(function () {
+            Route::get('/', [UserManagementController::class, 'index'])->name('index');
+            Route::get('/create', [UserManagementController::class, 'create'])->name('create');
+            Route::post('/', [UserManagementController::class, 'store'])->name('store');
+            Route::get('/{id}', [UserManagementController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [UserManagementController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [UserManagementController::class, 'update'])->name('update');
+            Route::delete('/{id}', [UserManagementController::class, 'destroy'])->name('destroy');
+        });
         
         // Supplier Management
         Route::get('/supplier-management', [SupplierManagementController::class, 'index'])->name('supplier_management.index');

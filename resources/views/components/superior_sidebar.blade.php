@@ -1,4 +1,4 @@
-<div class="w-64 min-h-screen bg-white flex flex-col">
+<div class="w-64 h-screen bg-white flex flex-col fixed top-0 left-0 z-40">
     <!-- Logo -->
     <div class="flex items-center justify-center py-6">
         <img src="{{ asset('/storage/assets/img_logo.png') }}" alt="Logo" class="img-logo">

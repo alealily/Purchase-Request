@@ -3,14 +3,14 @@
 @section('title', 'Edit Purchase Request')
 
 @section('content')
-<div class="flex bg-[#F4F5FA] min-h-screen">
+<div class="flex bg-[#F2F1F1] min-h-screen">
     {{-- Sidebar (dynamic based on role) --}}
     @php
         $userRole = strtolower(auth()->user()->role ?? '');
         $superiorRoles = ['superior', 'head of department', 'head of division', 'president director'];
         $isSuperior = in_array($userRole, $superiorRoles);
     @endphp
-    <aside class="w-64 bg-white h-screen sticky top-0">
+    <aside class="w-64 flex-shrink-0">
         @if($userRole === 'it')
             @include('components.it_sidebar')
         @elseif($isSuperior)

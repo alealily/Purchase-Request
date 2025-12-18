@@ -18,17 +18,35 @@ class PurchaseRequestController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource with search.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Only show PRs created by the logged-in user
-        $pr = PurchaseRequest::with(['prDetails.supplier', 'user'])
-                            ->where('id_user', auth()->id())
-                            ->orderBy('created_at', 'desc')
-                            ->get();
+        $search = $request->query('search');
         
-        return view('purchase_request.index', compact('pr'));
+        // Only show PRs created by the logged-in user with pagination (4 per page)
+        $query = PurchaseRequest::with(['prDetails.supplier', 'user'])
+                            ->where('id_user', auth()->id());
+        
+        // Search by PR number or material description
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('pr_number', 'like', '%' . $search . '%')
+                  ->orWhereHas('prDetails', function($prDetail) use ($search) {
+                      $prDetail->where('material_desc', 'like', '%' . $search . '%');
+                  })
+                  ->orWhereHas('prDetails.supplier', function($supplier) use ($search) {
+                      $supplier->where('name', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+        
+        $pr = $query->orderBy('created_at', 'desc')->paginate(4);
+        
+        // Preserve search in pagination links
+        $pr->appends(['search' => $search]);
+        
+        return view('purchase_request.index', compact('pr', 'search'));
     }
 
     /**
@@ -100,7 +118,7 @@ class PurchaseRequestController extends Controller
                 'id_pr' => $pr->id_pr,
                 'id_user' => auth()->id(),
                 'id_supplier' => $validated['id_supplier'],
-                'material_desc' => $validated['material_desc'],
+                'material_desc' => ucwords(strtolower($validated['material_desc'])),
                 'uom' => 'PCS', // Default
                 'unit_price' => $validated['unit_price'],
                 'currency_code' => 'RP', // Default
@@ -217,7 +235,7 @@ class PurchaseRequestController extends Controller
             $totalCost = $validated['unit_price'] * $validated['quantity'];
             
             $prDetail = $pr->prDetails;
-            $prDetail->material_desc = $validated['material_desc'];
+            $prDetail->material_desc = ucwords(strtolower($validated['material_desc']));
             $prDetail->unit_price = $validated['unit_price'];
             $prDetail->quantity = $validated['quantity'];
             $prDetail->total_cost = $totalCost;

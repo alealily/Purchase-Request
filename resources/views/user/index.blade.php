@@ -1,14 +1,26 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="flex bg-[#F4F5FA] min-h-screen">
+    <div class="flex bg-[#F2F1F1] min-h-screen">
         {{-- Sidebar (dynamic based on role) --}}
         @php
             $userRole = strtolower(auth()->user()->role ?? '');
             $superiorRoles = ['superior', 'head of department', 'head of division', 'president director'];
             $isSuperior = in_array($userRole, $superiorRoles);
+            
+            // Role colors for badges (case-insensitive keys)
+            $roleColorsMap = [
+                'employee' => 'bg-[#15ADA5] text-white',
+                'it' => 'bg-[#0A7D0C] text-white',
+                'head of department' => 'bg-[#FF8110] text-white',
+                'head of division' => 'bg-[#155D97] text-white',
+                'president director' => 'bg-[#F10000] text-white',
+            ];
+            
+            // Current role filter
+            $currentRole = $role ?? 'All';
         @endphp
-        <aside class="w-64 bg-white h-screen sticky top-0">
+        <aside class="w-64 flex-shrink-0">
             @if($userRole === 'it')
                 @include('components.it_sidebar')
             @elseif($isSuperior)
@@ -19,55 +31,82 @@
         </aside>
 
         <div class="flex-1 p-10 overflow-hidden">
+            {{-- Header --}}
             <div class="bg-[#187FC4] text-white rounded-2xl mb-[40px] flex items-center justify-between">
                 <p class="ml-[25px] font-bold text-[25px]">User Management</p>
                 <div class="relative p-5 mr-[5px]">
-
-                    <i id="profileIconBtn"
-                        class="fa-solid fa-user cursor-pointer text-xl hover:opacity-80 transition-opacity relative"></i>
-
+                    <i id="profileIconBtn" class="fa-solid fa-user cursor-pointer text-xl hover:opacity-80 transition-opacity relative"></i>
                     @include('components.modal_profile')
                 </div>
             </div>
 
+            {{-- Success/Error Messages --}}
+            @if(session('success'))
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             {{-- CARD UTAMA --}}
             <div class="bg-white rounded-2xl shadow-md p-6">
-                {{-- Bagian tab filter --}}
+                {{-- Role Filter Tabs --}}
                 <div class="relative -mx-6 -mt-6 bg-[#F3F7FF] rounded-t-2xl px-6 pt-4">
-                    <div class="flex items-center gap-6 border-gray-200 pb-3">
-                        <button class="tab-link active font-semibold text-[#187FC4] border-b-4 border-[#187FC4] pb-2"
-                            data-role="All">All User</button>
-                        <button class="tab-link font-semibold text-[#187FC4] pb-2" data-role="Employee">Employee</button>
-                        <button class="tab-link font-semibold text-[#187FC4] pb-2" data-role="Head of Department">Head of
-                            Department</button>
-                        <button class="tab-link font-semibold text-[#187FC4] pb-2" data-role="Head of Division">Head of
-                            Division</button>
-                        <button class="tab-link font-semibold text-[#187FC4] pb-2" data-role="President Director">President
-                            Director</button>
-                        <button class="tab-link font-semibold text-[#187FC4] pb-2" data-role="IT">IT</button>
+                    <div class="flex items-center gap-6 border-b border-gray-200">
+                        <a href="{{ route('user_management.index') }}" 
+                           class="font-semibold text-[#187FC4] pb-3 {{ $currentRole === 'All' || !$currentRole ? 'border-b-[3px] border-[#187FC4]' : '' }}">
+                            All User
+                        </a>
+                        <a href="{{ route('user_management.index', ['role' => 'Employee']) }}" 
+                           class="font-semibold text-[#187FC4] pb-3 {{ $currentRole === 'Employee' ? 'border-b-[3px] border-[#187FC4]' : '' }}">
+                            Employee
+                        </a>
+                        <a href="{{ route('user_management.index', ['role' => 'Head of Department']) }}" 
+                           class="font-semibold text-[#187FC4] pb-3 {{ $currentRole === 'Head of Department' ? 'border-b-[3px] border-[#187FC4]' : '' }}">
+                            Head of Department
+                        </a>
+                        <a href="{{ route('user_management.index', ['role' => 'Head of Division']) }}" 
+                           class="font-semibold text-[#187FC4] pb-3 {{ $currentRole === 'Head of Division' ? 'border-b-[3px] border-[#187FC4]' : '' }}">
+                            Head of Division
+                        </a>
+                        <a href="{{ route('user_management.index', ['role' => 'President Director']) }}" 
+                           class="font-semibold text-[#187FC4] pb-3 {{ $currentRole === 'President Director' ? 'border-b-[3px] border-[#187FC4]' : '' }}">
+                            President Director
+                        </a>
+                        <a href="{{ route('user_management.index', ['role' => 'IT']) }}" 
+                           class="font-semibold text-[#187FC4] pb-3 {{ $currentRole === 'IT' ? 'border-b-[3px] border-[#187FC4]' : '' }}">
+                            IT
+                        </a>
                     </div>
                 </div>
 
-                {{-- Bagian search dan tombol --}}
+                {{-- Search and Buttons --}}
                 <div class="flex items-center justify-between mb-4 mt-5">
-                    <div class="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-1/3">
+                    <form action="{{ route('user_management.index') }}" method="GET" class="flex items-center border border-gray-300 rounded-lg px-3 py-2 w-1/3">
                         <i class="fa-solid fa-search text-gray-400 mr-2"></i>
-                        <input type="text" id="searchInput" placeholder="Search user"
+                        <input type="text" name="search" placeholder="Search user" value="{{ $search ?? '' }}"
                             class="w-full focus:outline-none text-sm text-gray-600">
-                    </div>
+                        @if($currentRole)
+                            <input type="hidden" name="role" value="{{ $currentRole }}">
+                        @endif
+                    </form>
                     <div class="flex items-center gap-3">
                         <button id="exportBtn"
                             class="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm font-medium">
                             <i class="fa-solid fa-file-export"></i> Export
                         </button>
-                        <button id="addUserBtn"
+                        <a href="{{ route('user_management.create') }}"
                             class="px-5 py-2 bg-[#187FC4] text-white rounded-lg hover:bg-[#156ca7] text-sm font-semibold cursor-pointer">
                             Add User
-                        </button>
+                        </a>
                     </div>
                 </div>
 
-                {{-- Bagian tabel --}}
+                {{-- Table --}}
                 <div class="max-w-full overflow-x-auto rounded-lg border border-gray-200">
                     <table class="min-w-[1300px] w-full text-sm text-black">
                         <thead class="bg-gray-100 text-black text-sm uppercase">
@@ -82,205 +121,116 @@
                                 <th class="text-center px-4 py-3">Action</th>
                             </tr>
                         </thead>
-                        <tbody id="userTableBody" class="text-sm">
-                            {{-- Data diambil dari database --}}
+                        <tbody class="text-sm">
+                            @forelse($users as $user)
+                                @php
+                                    // Get role color (case-insensitive)
+                                    $roleLower = strtolower($user->role ?? '');
+                                    $badgeClass = $roleColorsMap[$roleLower] ?? 'bg-gray-200 text-gray-700';
+                                @endphp
+                                <tr class="border-b border-gray-100 hover:bg-gray-50 data-row">
+                                    <td class="px-4 py-3">{{ $user->name }}</td>
+                                    <td class="px-4 py-3">{{ $user->badge }}</td>
+                                    <td class="px-4 py-3">{{ $user->email }}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $badgeClass }}">
+                                            {{ $user->role }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        @if($user->is_active)
+                                            <span class="px-3 py-1 bg-[#1ECB57] text-white rounded-lg text-xs font-semibold">Active</span>
+                                        @else
+                                            <span class="px-3 py-1 bg-[#6E6D6D] text-white rounded-lg text-xs font-semibold">Inactive</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-3">{{ $user->department ?? '-' }}</td>
+                                    <td class="px-4 py-3">{{ $user->division ?? '-' }}</td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center justify-center gap-2">
+                                            {{-- View --}}
+                                            <a href="{{ route('user_management.show', $user->id_user) }}"
+                                                class="bg-[#B6FDF4] text-[#15ADA5] p-2 rounded-lg hover:bg-[#66FFEC]">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
+                                            {{-- Edit --}}
+                                            <a href="{{ route('user_management.edit', $user->id_user) }}"
+                                                class="bg-[#FFEEB7] text-[#FF8110] p-2 rounded-lg hover:bg-[#FBD65E]">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </a>
+                                            {{-- Delete --}}
+                                            @if($user->id_user !== auth()->id())
+                                                <form action="{{ route('user_management.destroy', $user->id_user) }}" 
+                                                      method="POST" 
+                                                      onsubmit="return confirm('Are you sure you want to delete this user?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="bg-[#FFB3BA] text-[#E20030] p-2 rounded-lg hover:bg-[#FF7C88]">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <span class="bg-gray-200 text-gray-400 p-2 rounded-lg cursor-not-allowed">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                                        <div class="flex flex-col items-center gap-2">
+                                            <i class="fa-solid fa-users text-4xl text-gray-300"></i>
+                                            <p>No users found.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
-            </div> {{-- END CARD --}}
-        </div>
 
-        {{-- Modal Choose Role (modal pertama) --}}
-        <div id="roleModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
-            <div id="modalContent"
-                class="bg-white rounded-2xl shadow-lg w-[90%] max-w-xl px-8 py-6 relative transform scale-95 opacity-0 transition-all duration-300">
-
-                <div class="relative border-b border-gray-200 pb-4 mb-4">
-                    <h2 class="text-xl font-bold text-center text-gray-800">Choose Role</h2>
-                    <button id="closeModalButton" class="absolute right-0 top-0 text-gray-400 hover:text-gray-600 transition">
-                        <i class="fa-solid fa-xmark text-xl"></i>
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-3 md:grid-cols-3 gap-4 place-items-center">
-                    <div class="role-card" data-role="Employee">
-                        <i class="fa-solid fa-users text-3xl mb-2"></i>
-                        <p class="text-sm font-semibold">Employee</p>
+                {{-- Pagination --}}
+                @if($users->hasPages())
+                    <div class="mt-6 flex justify-center">
+                        {{ $users->links() }}
                     </div>
-
-                    <div class="role-card" data-role="IT">
-                        <i class="fa-solid fa-user text-3xl mb-2"></i>
-                        <p class="text-sm font-semibold">IT</p>
-                    </div>
-
-                    <div class="role-card" data-role="Head of Department">
-                        <i class="fa-solid fa-user-tie text-3xl mb-2"></i>
-                        <p class="text-sm font-semibold text-center">Head of Department</p>
-                    </div>
-
-                    <div class="role-card" data-role="Head of Division">
-                        <i class="fa-solid fa-user-tie text-3xl mb-2"></i>
-                        <p class="text-sm font-semibold text-center">Head of Division</p>
-                    </div>
-
-                    <div class="role-card" data-role="President Director">
-                        <i class="fa-solid fa-user-tie text-3xl mb-2"></i>
-                        <p class="text-sm font-semibold text-center">President Director</p>
-                    </div>
-                </div>
-
-                <div class="mt-6 flex justify-end">
-                    <button id="nextToDetail"
-                        class="bg-[#187FC4] text-white px-6 py-2 rounded-lg font-semibold opacity-50 cursor-not-allowed"
-                        disabled>
-                        Next
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <link rel="stylesheet" href="{{ asset('css/modal_choose_role.css') }}">
-
-        {{-- Modal Add/Edit --}}
-        <div id="userModal" class="hidden fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-            <div class="bg-white rounded-lg shadow-lg w-[800px] max-h-[90vh] overflow-hidden flex flex-col"
-                id="userModalContent">
-                <div class="flex justify-between items-center border-b border-gray-300 px-6 py-4">
-                    <h2 class="font-bold text-xl" id="modalTitle">Add User</h2>
-                    <button class="closeModalBtn text-gray-500 hover:text-black text-xl"><i
-                            class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div class="flex-1 overflow-y-auto px-6 py-4 mb-2">
-
-                    <form id="userForm" class="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
-                        <input type="hidden" id="editingBadge">
-
-                        <div>
-                            <label class="text-sm font-semibold">Name</label>
-                            <input type="text" id="nameInput" class="border w-full border-gray-300 px-3 py-2 rounded-lg">
-                            <p id="nameInput-error" class="text-red-500 text-xs mt-1 hidden"></p>
-                        </div>
-
-                        <div>
-                            <label class="text-sm font-semibold">No Badge</label>
-                            <input type="text" id="badgeInput" class="border w-full border-gray-300 px-3 py-2 rounded-lg">
-                            <p id="badgeInput-error" class="text-red-500 text-xs mt-1 hidden"></p>
-                        </div>
-
-                        <div>
-                            <label class="text-sm font-semibold">Email</label>
-                            <input type="email" id="emailInput" class="border w-full border-gray-300 px-3 py-2 rounded-lg">
-                            <p id="emailInput-error" class="text-red-500 text-xs mt-1 hidden"></p>
-                        </div>
-
-                        <div>
-                            <label class="text-sm font-semibold">Role</label>
-
-                            <input type="hidden" id="roleInput" value="">
-
-                            <div id="roleDropdownTrigger" class="relative border w-full border-gray-300 px-3 py-2 rounded-lg bg-white cursor-pointer
-                                            flex justify-between items-center">
-                                <span id="roleDropdownLabel" class="text-gray-700">-- Select Role --</span>
-                                <i class="fa-solid fa-chevron-down text-gray-500 text-xs"></i>
-                            </div>
-
-                            <div id="roleDropdownOptions"
-                                class="hidden absolute z-10 w-[372px] mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                <div class="p-2 hover:bg-gray-100 cursor-pointer" data-value="Employee">Employee</div>
-                                <div class="p-2 hover:bg-gray-100 cursor-pointer" data-value="IT">IT</div>
-                                <div class="p-2 hover:bg-gray-100 cursor-pointer" data-value="Head of Department">Head of
-                                    Department</div>
-                                <div class="p-2 hover:bg-gray-100 cursor-pointer" data-value="Head of Division">Head of
-                                    Division</div>
-                                <div class="p-2 hover:bg-gray-100 cursor-pointer" data-value="President Director">President
-                                    Director</div>
-                            </div>
-
-                            <p id="roleInput-error" class="text-red-500 text-xs mt-1 hidden"></p>
-                        </div>
-
-                        <div>
-                            <label class="text-sm font-semibold">Department</label>
-                            <input type="text" id="departmentInput"
-                                class="border w-full border-gray-300 px-3 py-2 rounded-lg">
-                            <p id="departmentInput-error" class="text-red-500 text-xs mt-1 hidden"></p>
-                        </div>
-
-                        <div>
-                            <label class="text-sm font-semibold">Division</label>
-                            <input type="text" id="divisionInput"
-                                class="border w-full border-gray-300 px-3 py-2 rounded-lg">
-                            <p id="divisionInput-error" class="text-red-500 text-xs mt-1 hidden"></p>
-                        </div>
-
-                        <div id="passwordWrapper">
-                            <label class="text-sm font-semibold">Password</label>
-                            <input type="password" id="passwordInput"
-                                class="border w-full border-gray-300 px-3 py-2 rounded-lg">
-                            <p id="passwordInput-error" class="text-red-500 text-xs mt-1 hidden"></p>
-                        </div>
-
-                        <div id="confirmPasswordWrapper">
-                            <label class="text-sm font-semibold">Confirm Password</label>
-                            <input type="password" id="confirmPasswordInput"
-                                class="border w-full border-gray-300 px-3 py-2 rounded-lg">
-                            <p id="confirmPasswordInput-error" class="text-red-500 text-xs mt-1 hidden"></p>
-                        </div>
-
-                        <div class="col-span-2">
-                            <label class="text-sm font-semibold">Signature (JPG/PNG)</label>
-                            <input type="file" id="signatureInput"
-                                class="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:border-0 file:rounded-lg file:bg-gray-100 file:text-black hover:file:bg-gray-200 border border-gray-300 rounded-lg"
-                                accept="image/jpeg, image/png">
-                            <p id="signatureInput-error" class="text-red-500 text-xs mt-1 hidden"></p>
-                            <div id="signaturePreview" class="mt-2 text-xs"></div>
-                        </div>
-
-                        <div id="activeCheckboxWrapper" class="col-span-2 hidden flex items-center pt-2">
-                            <input type="checkbox" id="isActiveInput"
-                                class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                            <label for="isActiveInput" class="ml-2 text-sm font-semibold text-gray-900">User is
-                                Active</label>
-                        </div>
-
-                    </form>
-                </div>
-                <div class="flex justify-end gap-6 border-t border-gray-200 px-6 py-4 bg-gray-50">
-                    <button
-                        class="closeModalBtn px-6 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 font-semibold transition">Cancel</button>
-                    <button id="saveUserBtn"
-                        class="px-6 py-2 bg-[#187FC4] text-white rounded-lg font-semibold hover:bg-[#156ca7] transition">Save
-                        User</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="deleteModal" class="hidden fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-            <div class="bg-white rounded-lg shadow-lg w-[400px] overflow-hidden">
-                <div class="flex justify-between items-center border-b border-gray-300 px-6 py-4">
-                    <h2 class="font-bold text-xl">Delete User</h2>
-                    <button class="closeDeleteBtn text-gray-500 hover:text-black text-xl"><i
-                            class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div class="px-6 py-5 text-left">
-                    <p class="text-gray-700 text-base mb-2">Are you sure you want to delete this user?</p>
-                    <p id="deleteUserName" class="font-semibold text-gray-900"></p>
-                </div>
-                <div class="flex justify-end bg-gray-100 px-6 py-4 rounded-b-lg gap-4">
-                    <button
-                        class="closeDeleteBtn px-6 py-2 bg-white rounded-lg border font-bold cursor-pointer hover:shadow-md transition">Cancel</button>
-                    <button id="confirmDeleteBtn"
-                        class="px-6 py-2 bg-red-600 text-white rounded-lg font-bold cursor-pointer hover:bg-red-700 transition">Delete</button>
-                </div>
+                @endif
             </div>
         </div>
     </div>
+
+    {{-- Scripts --}}
     <script>
-        const userManagementConfig = {
-            csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
-            apiListUrl: '{{ route("user_management.list") }}'
-        };
+        // Export to CSV
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const rows = document.querySelectorAll('.data-row');
+            let csv = 'Name,Badge,Email,Role,Status,Department,Division\n';
+            
+            rows.forEach(row => {
+                if (row.style.display !== 'none') {
+                    const cells = row.querySelectorAll('td');
+                    const rowData = [
+                        cells[0].textContent.trim(),
+                        cells[1].textContent.trim(),
+                        cells[2].textContent.trim(),
+                        cells[3].textContent.trim(),
+                        cells[4].textContent.trim(),
+                        cells[5].textContent.trim(),
+                        cells[6].textContent.trim()
+                    ];
+                    csv += rowData.map(d => `"${d}"`).join(',') + '\n';
+                }
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'users_export.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        });
     </script>
-    <script src="{{ asset('js/user_management.js') }}"></script>
-    @include('components.modal_profile')
 @endsection

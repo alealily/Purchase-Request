@@ -11,39 +11,49 @@ use App\Models\Signature;
 class UserManagementController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of users with pagination, optional role filter, and search.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with('signature')->get();
-        return view('user.index', compact('users'));
-    }
-
-    /**
-     * Get all users as JSON for AJAX
-     */
-    public function getUsers()
-    {
-        $users = User::with('signature')->get()->map(function ($user) {
-            return [
-                'id_user' => $user->id_user,
-                'name' => $user->name,
-                'badge' => $user->badge,
-                'email' => $user->email,
-                'role' => $user->role,
-                'position' => $user->position,
-                'department' => $user->department,
-                'division' => $user->division,
-                'is_active' => $user->is_active,
-                'signature' => $user->signature ? Storage::url($user->signature->file_path) : null,
-            ];
-        });
+        $role = $request->query('role');
+        $search = $request->query('search');
         
-        return response()->json($users);
+        $query = User::with('signature');
+        
+        // Filter by role if specified
+        if ($role && $role !== 'All') {
+            $query->where('role', $role);
+        }
+        
+        // Search by name, email, badge, or department
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('email', 'like', '%' . $search . '%')
+                  ->orWhere('badge', 'like', '%' . $search . '%')
+                  ->orWhere('department', 'like', '%' . $search . '%')
+                  ->orWhere('division', 'like', '%' . $search . '%');
+            });
+        }
+        
+        $users = $query->orderBy('id_user', 'desc')->paginate(4);
+        
+        // Preserve query parameters in pagination links
+        $users->appends(['role' => $role, 'search' => $search]);
+        
+        return view('user.index', compact('users', 'role', 'search'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Show the form for creating a new user.
+     */
+    public function create()
+    {
+        return view('user.create');
+    }
+
+    /**
+     * Store a newly created user in storage.
      */
     public function store(Request $request)
     {
@@ -52,10 +62,10 @@ class UserManagementController extends Controller
             'badge' => 'required|string|max:50|unique:users,badge',
             'email' => 'required|email|unique:users,email',
             'role' => 'required|string',
-            'department' => 'nullable|string|max:255',
-            'division' => 'nullable|string|max:255',
+            'department' => 'required|string|max:255',
+            'division' => 'required|string|max:255',
             'password' => 'required|string|min:6|confirmed',
-            'signature' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'signature' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         // Map role to position
@@ -63,13 +73,13 @@ class UserManagementController extends Controller
 
         // Create user
         $user = User::create([
-            'name' => $validated['name'],
-            'badge' => $validated['badge'],
+            'name' => ucwords(strtolower($validated['name'])),
+            'badge' => strtoupper($validated['badge']),
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
             'position' => $position,
-            'department' => $validated['department'] ?? '-',
+            'department' => isset($validated['department']) ? ucwords(strtolower($validated['department'])) : '-',
             'division' => $validated['division'] ?? '-',
             'is_active' => true,
         ]);
@@ -83,15 +93,31 @@ class UserManagementController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'User created successfully',
-            'user' => $user,
-        ]);
+        return redirect()
+            ->route('user_management.index')
+            ->with('success', 'User created successfully');
     }
 
     /**
-     * Update the specified resource in storage.
+     * Display the specified user.
+     */
+    public function show(string $id)
+    {
+        $user = User::with('signature')->findOrFail($id);
+        return view('user.show', compact('user'));
+    }
+
+    /**
+     * Show the form for editing the specified user.
+     */
+    public function edit(string $id)
+    {
+        $user = User::with('signature')->findOrFail($id);
+        return view('user.edit', compact('user'));
+    }
+
+    /**
+     * Update the specified user in storage.
      */
     public function update(Request $request, string $id)
     {
@@ -114,14 +140,14 @@ class UserManagementController extends Controller
 
         // Update user
         $user->update([
-            'name' => $validated['name'],
-            'badge' => $validated['badge'],
+            'name' => ucwords(strtolower($validated['name'])),
+            'badge' => strtoupper($validated['badge']),
             'email' => $validated['email'],
             'role' => $validated['role'],
             'position' => $position,
-            'department' => $validated['department'] ?? '-',
+            'department' => isset($validated['department']) ? ucwords(strtolower($validated['department'])) : '-',
             'division' => $validated['division'] ?? '-',
-            'is_active' => $request->has('is_active') ? $validated['is_active'] : $user->is_active,
+            'is_active' => $request->has('is_active') ? true : false,
         ]);
 
         // Update password if provided
@@ -144,15 +170,13 @@ class UserManagementController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'User updated successfully',
-            'user' => $user,
-        ]);
+        return redirect()
+            ->route('user_management.index')
+            ->with('success', 'User updated successfully');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified user from storage.
      */
     public function destroy(string $id)
     {
@@ -160,10 +184,9 @@ class UserManagementController extends Controller
 
         // Prevent deleting yourself
         if ($user->id_user === auth()->id()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You cannot delete your own account',
-            ], 403);
+            return redirect()
+                ->route('user_management.index')
+                ->with('error', 'You cannot delete your own account');
         }
 
         // Delete signature if exists
@@ -174,10 +197,9 @@ class UserManagementController extends Controller
 
         $user->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'User deleted successfully',
-        ]);
+        return redirect()
+            ->route('user_management.index')
+            ->with('success', 'User deleted successfully');
     }
 
     /**
