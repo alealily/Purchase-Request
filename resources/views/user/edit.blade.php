@@ -140,7 +140,7 @@
                     @if($user->signature)
                         <div class="col-span-2">
                             <label class="block text-sm font-semibold mb-2">Current Signature</label>
-                            <img src="{{ Storage::url($user->signature->file_path) }}" alt="Current Signature" 
+                            <img src="{{ asset('storage/' . $user->signature) }}" alt="Current Signature" 
                                 class="max-h-24 border border-gray-200 rounded-lg p-2 bg-gray-50">
                         </div>
                     @endif

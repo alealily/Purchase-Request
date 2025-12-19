@@ -34,6 +34,7 @@ class User extends Authenticatable
         'department',
         'division',
         'is_active',
+        'signature',
     ];
 
     /**

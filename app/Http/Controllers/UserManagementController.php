@@ -159,15 +159,11 @@ class UserManagementController extends Controller
         if ($request->hasFile('signature')) {
             // Delete old signature if exists
             if ($user->signature) {
-                Storage::disk('public')->delete($user->signature->file_path);
-                $user->signature->delete();
+                Storage::disk('public')->delete($user->signature);
             }
             
             $path = $request->file('signature')->store('signatures', 'public');
-            Signature::create([
-                'id_user' => $user->id_user,
-                'file_path' => $path,
-            ]);
+            $user->update(['signature' => $path]);
         }
 
         return redirect()

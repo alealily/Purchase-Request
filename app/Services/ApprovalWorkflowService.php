@@ -297,6 +297,7 @@ class ApprovalWorkflowService
                 'division' => $user->division ?? '-',
                 'status' => $approval->approval_status,
                 'remarks' => $approval->remarks,
+                'signature' => $user->signature ?? null,
                 'date' => $approval->approval_date 
                     ? \Carbon\Carbon::parse($approval->approval_date)->format('d M Y, H:i')
                     : null,

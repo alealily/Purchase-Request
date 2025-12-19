@@ -89,7 +89,7 @@
                         <div class="col-span-2">
                             <label class="block text-sm text-gray-500 mb-2">Signature</label>
                             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 inline-block">
-                                <img src="{{ Storage::url($user->signature->file_path) }}" alt="User Signature" 
+                                <img src="{{ asset('storage/' . $user->signature) }}" alt="User Signature" 
                                     class="max-h-32">
                             </div>
                         </div>

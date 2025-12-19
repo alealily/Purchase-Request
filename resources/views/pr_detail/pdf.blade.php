@@ -17,29 +17,50 @@
             padding: 20px;
         }
         .header {
-            text-align: center;
-            border-bottom: 2px solid #187FC4;
+            width: 100%;
+            border-bottom: 3px solid #187FC4;
             padding-bottom: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
-        .header h1 {
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .header-logo {
+            width: 180px;
+            vertical-align: middle;
+            padding-left: 30px;
+        }
+        .header-logo img {
+            width: 150px;
+            height: auto;
+        }
+        .header-info {
+            text-align: right;
+            vertical-align: middle;
+        }
+        .header-info h1 {
+            font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
             color: #187FC4;
-            font-size: 22px;
+            font-size: 26px;
             margin-bottom: 5px;
+            font-weight: bold;
+            letter-spacing: 2px;
         }
-        .header p {
+        .header-info p {
             color: #666;
-            font-size: 11px;
+            font-size: 12px;
+            margin-bottom: 8px;
         }
         .pr-number {
             background: #187FC4;
             color: white;
-            padding: 8px 15px;
+            padding: 5px 12px;
             display: inline-block;
-            border-radius: 5px;
-            font-size: 14px;
+            border-radius: 4px;
+            font-size: 13px;
             font-weight: bold;
-            margin-top: 10px;
+            margin-top: 5px;
         }
         .section {
             margin-bottom: 20px;
@@ -113,35 +134,35 @@
         .approval-box {
             display: table-cell;
             text-align: center;
-            padding: 15px;
+            padding: 10px 5px;
             border: 1px solid #ddd;
             vertical-align: top;
         }
         .approval-box .role {
             font-weight: bold;
-            font-size: 11px;
+            font-size: 9px;
             color: #666;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         .approval-box .name {
             font-weight: bold;
-            font-size: 12px;
+            font-size: 10px;
             margin-bottom: 5px;
         }
         .approval-box .signature {
-            width: 80px;
-            height: 50px;
+            width: 60px;
+            height: 40px;
             margin: 5px auto;
             object-fit: contain;
         }
         .approval-box .date {
-            font-size: 10px;
+            font-size: 8px;
             color: #666;
         }
         .approval-box .status {
-            font-size: 10px;
+            font-size: 9px;
             font-weight: bold;
-            margin-top: 5px;
+            margin-top: 3px;
         }
         .status-approved { color: #0A7D0C; }
         .status-rejected { color: #E20030; }
@@ -157,9 +178,18 @@
 </head>
 <body>
     <div class="header">
-        <h1>PURCHASE REQUEST</h1>
-        <p>PT. SIIX EMS Indonesia</p>
-        <div class="pr-number">{{ $pr->pr_number }}</div>
+        <table class="header-table">
+            <tr>
+                <td class="header-logo">
+                    <img src="{{ storage_path('app/public/assets/img_logo.png') }}" alt="Logo">
+                </td>
+                <td class="header-info">
+                    <h1>PURCHASE REQUEST</h1>
+                    <p>PT SIIX ELECTRONICS INDONESIA</p>
+                    <span class="pr-number">{{ $pr->pr_number }}</span>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <div class="section">
@@ -227,24 +257,44 @@
     @endif
 
     <div class="section approval-section">
-        <div class="section-title">Approval Signatures</div>
+        <div class="section-title">Signatures</div>
         <div class="approval-grid">
+            {{-- Requester Signature --}}
+            <div class="approval-box">
+                <div class="role">REQUESTER</div>
+                <div class="name">{{ $pr->user->name ?? '-' }}</div>
+                @if(!empty($pr->user->signature))
+                    <img src="{{ public_path('storage/' . $pr->user->signature) }}" class="signature" alt="signature">
+                @else
+                    <div style="height: 40px; border-bottom: 1px solid #333; width: 60px; margin: 5px auto;"></div>
+                @endif
+                <div class="date">
+                    {{ $pr->created_at ? $pr->created_at->format('d M Y, H:i') : '' }}
+                </div>
+                <div class="status status-approved">SUBMITTED</div>
+            </div>
+            
+            {{-- Approval Signatures --}}
             @foreach($approvalHistory as $approval)
             <div class="approval-box">
-                <div class="role">{{ strtoupper($approval['role']) }}</div>
-                <div class="name">{{ $approval['name'] }}</div>
+                <div class="role">{{ $approval['role'] ?? '-' }}</div>
+                <div class="name">{{ $approval['user'] ?? '-' }}</div>
                 @if(!empty($approval['signature']))
                     <img src="{{ public_path('storage/' . $approval['signature']) }}" class="signature" alt="signature">
                 @else
-                    <div style="height: 50px; border-bottom: 1px solid #333; width: 80px; margin: 10px auto;"></div>
+                    <div style="height: 40px; border-bottom: 1px solid #333; width: 60px; margin: 5px auto;"></div>
                 @endif
                 <div class="date">
-                    @if($approval['actioned_at'])
-                        {{ \Carbon\Carbon::parse($approval['actioned_at'])->format('d M Y') }}
-                    @endif
+                    {{ $approval['date'] ?? '' }}
                 </div>
                 <div class="status {{ $approval['status'] === 'approve' ? 'status-approved' : ($approval['status'] === 'reject' ? 'status-rejected' : '') }}">
-                    {{ strtoupper($approval['status']) }}
+                    @if($approval['status'] === 'approve')
+                        APPROVED
+                    @elseif($approval['status'] === 'reject')
+                        REJECTED
+                    @else
+                        {{ strtoupper($approval['status'] ?? '') }}
+                    @endif
                 </div>
             </div>
             @endforeach
