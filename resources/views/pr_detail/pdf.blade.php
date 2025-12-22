@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Purchase Request - {{ $pr->pr_number }}</title>
-    <style>
+     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Palatino Linotype', Palatino, 'DejaVu Serif', Georgia, serif;
             font-size: 12px;
-            line-height: 1.4;
+            line-height: 1.5;
             color: #333;
-            padding: 20px;
+            padding: 20px 40px;
         }
         .header {
             width: 100%;
@@ -40,27 +40,29 @@
             vertical-align: middle;
         }
         .header-info h1 {
-            font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+            font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', serif;
             color: #187FC4;
             font-size: 26px;
-            margin-bottom: 5px;
+            margin: 0 0 3px 0;
             font-weight: bold;
             letter-spacing: 2px;
         }
         .header-info p {
             color: #666;
             font-size: 12px;
-            margin-bottom: 8px;
+            margin: 0 0 5px 0;
         }
         .pr-number {
             background: #187FC4;
             color: white;
-            padding: 5px 12px;
+            padding: 6px 14px;
             display: inline-block;
             border-radius: 4px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
-            margin-top: 5px;
+            margin: 0;
+            line-height: 1;
+            vertical-align: middle;
         }
         .section {
             margin-bottom: 20px;
@@ -114,10 +116,13 @@
         }
         .status-badge {
             display: inline-block;
-            padding: 4px 12px;
+            padding: 3px 14px 5px 14px;
             border-radius: 15px;
             font-size: 11px;
             font-weight: bold;
+            line-height: 1;
+            vertical-align: middle;
+            text-align: center;
         }
         .status-approve {
             background: #B7FCC9;
@@ -192,12 +197,19 @@
         </table>
     </div>
 
+    {{-- Company Address --}}
+    <div style="text-align: left; margin-bottom: 24px; font-size: 14px; color: #555; line-height: 1,5;">
+        <strong>PT SIIX Electronics Indonesia</strong><br>
+        Jalan Beringin Lot 9, Batamindo Industrial Park, Muka Kuning, Batam<br>
+        Tel. 770-611486 Fax. 770-611706
+    </div>
+
     <div class="section">
         <div class="section-title">Request Information</div>
         <div class="info-grid">
             <div class="info-row">
                 <div class="info-label">Status</div>
-                <div class="info-value">
+                <div class="info-value text-center">
                     <span class="status-badge status-approve">Approved</span>
                 </div>
             </div>

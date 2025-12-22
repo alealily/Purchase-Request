@@ -285,6 +285,20 @@ class ApprovalWorkflowService
             
             $user = $approval->user;
             
+            // Determine role label based on position and division
+            $position = $user->position ?? '';
+            $roleName = $roleNames[$position] ?? strtoupper($user->role ?? 'Unknown');
+            
+            // For head_of_division, differentiate between Factory Manager and General Manager
+            if ($position === 'head_of_division') {
+                $userDivision = strtolower($user->division ?? '');
+                if ($userDivision === 'general') {
+                    $roleName = 'GENERAL MANAGER';
+                } else {
+                    $roleName = 'FACTORY MANAGER';
+                }
+            }
+            
             // Use department if available, otherwise use division
             $deptOrDiv = (!empty($user->department) && $user->department !== '-') 
                         ? $user->department 
@@ -292,7 +306,7 @@ class ApprovalWorkflowService
             
             $history[] = [
                 'user' => $user->name ?? 'Unknown',
-                'role' => $roleNames[$user->position ?? ''] ?? strtoupper($user->role ?? 'Unknown'),
+                'role' => $roleName,
                 'department' => $deptOrDiv,
                 'division' => $user->division ?? '-',
                 'status' => $approval->approval_status,
