@@ -211,10 +211,16 @@
             const filterBtn = document.getElementById('filterBtn');
             const filterModal = document.getElementById('filterModal');
             const closeFilterBtn = document.getElementById('closeFilterBtn');
+            const exportBtn = document.getElementById('exportBtn');
 
             // Filter Modal - only open/close handling
             filterBtn.addEventListener('click', () => filterModal.showModal());
             closeFilterBtn.addEventListener('click', () => filterModal.close());
+
+            // Export Button - redirect to export route
+            exportBtn.addEventListener('click', () => {
+                window.location.href = '{{ route("pr_detail.export") }}';
+            });
         });
     </script>
 @endsection

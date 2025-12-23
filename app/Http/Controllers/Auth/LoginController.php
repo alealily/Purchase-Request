@@ -43,8 +43,25 @@ class LoginController extends Controller
 
         // Attempt login
         if (Auth::attempt($credentials, $request->filled('remember'))) {
-            // Check if selected role matches user's actual role
+            // Check if user is active
             $user = auth()->user();
+            
+            if (!$user->is_active) {
+                // User is inactive - logout and return error
+                Auth::logout();
+                $request->session()->invalidate();
+                
+                \Log::warning('Login failed - user inactive', [
+                    'email' => $credentials['email'],
+                    'user_id' => $user->id_user,
+                ]);
+                
+                return back()->withErrors([
+                    'email' => 'Your account has been deactivated. Please contact IT administrator.',
+                ])->onlyInput('email', 'role');
+            }
+            
+            // Check if selected role matches user's actual role
             $userRole = strtolower($user->role ?? '');
             
             if ($userRole !== $selectedRole) {

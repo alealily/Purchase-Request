@@ -7,14 +7,17 @@ use App\Models\PurchaseRequest;
 use App\Models\PrDetail;
 use App\Models\Supplier;
 use App\Services\ApprovalWorkflowService;
+use App\Services\EmailNotificationService;
 
 class PurchaseRequestController extends Controller
 {
     protected $approvalService;
+    protected $emailService;
 
-    public function __construct(ApprovalWorkflowService $approvalService)
+    public function __construct(ApprovalWorkflowService $approvalService, EmailNotificationService $emailService)
     {
         $this->approvalService = $approvalService;
+        $this->emailService = $emailService;
     }
 
     /**
@@ -177,6 +180,18 @@ class PurchaseRequestController extends Controller
 
             // Create approval chain
             $this->approvalService->createApprovalChain($pr);
+            
+            // Reload PR with relationships for email
+            $pr->load(['user', 'prDetails']);
+            
+            // Send email notification to employee (submitter)
+            $this->emailService->sendSubmittedNotification($pr);
+            
+            // Send email notification to first approver (Head of Department)
+            $firstApproval = $this->approvalService->getCurrentPendingApproval($pr);
+            if ($firstApproval && $firstApproval->user) {
+                $this->emailService->sendApprovalNeededNotification($pr, $firstApproval->user);
+            }
 
             return redirect()
                 ->route('purchase_request.index')
@@ -314,6 +329,18 @@ class PurchaseRequestController extends Controller
                 
                 // Recreate approval chain for new round
                 $this->approvalService->createApprovalChain($pr);
+                
+                // Reload PR with relationships for email
+                $pr->load(['user', 'prDetails']);
+                
+                // Send email notification to employee (re-submitter)
+                $this->emailService->sendSubmittedNotification($pr);
+                
+                // Send email notification to first approver (Head of Department)
+                $firstApproval = $this->approvalService->getCurrentPendingApproval($pr);
+                if ($firstApproval && $firstApproval->user) {
+                    $this->emailService->sendApprovalNeededNotification($pr, $firstApproval->user);
+                }
             }
 
             return redirect()

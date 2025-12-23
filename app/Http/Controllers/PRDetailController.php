@@ -243,5 +243,15 @@ class PRDetailController extends Controller
         
         return $pdf->download('PR-' . $pr->pr_number . '.pdf');
     }
+
+    /**
+     * Export PR Detail to Excel
+     */
+    public function export()
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $filename = 'PurchaseRequestDetail_' . date('dmY_His') . '.xlsx';
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PrDetailExport(auth()->user()), $filename);
+    }
 }
 

@@ -5,9 +5,16 @@ namespace App\Services;
 use App\Models\Approval;
 use App\Models\PurchaseRequest;
 use App\Models\User;
+use App\Services\EmailNotificationService;
 
 class ApprovalWorkflowService
 {
+    protected EmailNotificationService $emailService;
+
+    public function __construct(EmailNotificationService $emailService)
+    {
+        $this->emailService = $emailService;
+    }
     /**
      * Determine approval chain based on division and total cost
      * 
@@ -183,6 +190,18 @@ class ApprovalWorkflowService
         if (!$hasMorePendingApprovals) {
             // Final approval - update PR status
             $pr->update(['status' => 'approve']);
+            
+            // Send final approval notification to requester
+            $this->emailService->sendApprovedNotification($pr, $approver, true);
+        } else {
+            // Send approval notification to requester (not final)
+            $this->emailService->sendApprovedNotification($pr, $approver, false);
+            
+            // Send approval needed notification to next approver
+            $nextApproval = $this->getCurrentPendingApproval($pr);
+            if ($nextApproval && $nextApproval->user) {
+                $this->emailService->sendApprovalNeededNotification($pr, $nextApproval->user);
+            }
         }
         
         return true;
@@ -219,6 +238,9 @@ class ApprovalWorkflowService
            ->where('approval_status', 'pending')
            ->update(['approval_status' => 'cancelled']);
         
+        // Send rejection notification to requester
+        $this->emailService->sendRejectedNotification($pr, $approver, $remarks);
+        
         return true;
     }
     
@@ -252,6 +274,9 @@ class ApprovalWorkflowService
         $pr->approvals()
            ->where('approval_status', 'pending')
            ->update(['approval_status' => 'cancelled']);
+        
+        // Send revision notification to requester
+        $this->emailService->sendRevisionNotification($pr, $approver, $remarks);
         
         return true;
     }

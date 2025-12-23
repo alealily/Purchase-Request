@@ -31,17 +31,21 @@
             </div>
 
             <!-- Cards with real data -->
-            <div class="grid grid-cols-3 gap-20 mb-[40px]">
+            <div class="grid grid-cols-4 gap-10 mb-[40px]">
                 <div class="bg-white p-6 rounded-2xl transition duration-400 ease-out hover:shadow-lg hover:scale-101">
-                    <p class="text-[20px] text-[gray] font-semibold mb-[5px]">Purchase Request Pending</p>
+                    <p class="text-[18px] text-[gray] font-semibold mb-[5px]">PR Pending</p>
                     <p class="text-3xl font-bold">{{ $pendingCount }}</p>
                 </div>
                 <div class="bg-white p-6 rounded-2xl transition duration-400 ease-out hover:shadow-lg hover:scale-101">
-                    <p class="text-[20px] text-[gray] font-semibold mb-[5px]">Purchase Request Approve</p>
+                    <p class="text-[18px] text-[gray] font-semibold mb-[5px]">PR Approved</p>
                     <p class="text-3xl font-bold">{{ $approvedCount }}</p>
                 </div>
                 <div class="bg-white p-6 rounded-2xl transition duration-400 ease-out hover:shadow-lg hover:scale-101">
-                    <p class="text-[20px] text-[gray] font-semibold mb-[5px]">Purchase Request Reject</p>
+                    <p class="text-[18px] text-[gray] font-semibold mb-[5px]">PR Revision</p>
+                    <p class="text-3xl font-bold">{{ $revisionCount }}</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl transition duration-400 ease-out hover:shadow-lg hover:scale-101">
+                    <p class="text-[18px] text-[gray] font-semibold mb-[5px]">PR Rejected</p>
                     <p class="text-3xl font-bold">{{ $rejectedCount }}</p>
                 </div>
             </div>
