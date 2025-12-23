@@ -152,7 +152,7 @@
             </div>
             
             <center>
-                <a href="{{ url('/purchase_request/' . $pr->id_pr) }}" class="btn-action">
+                <a href="{{ url('/purchase-request/' . $pr->id_pr) }}" class="btn-action">
                     View Purchase Request
                 </a>
             </center>
