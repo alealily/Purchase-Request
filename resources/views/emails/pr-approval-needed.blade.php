@@ -105,8 +105,8 @@
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>PT Infinity</h1>
-            <span class="pending-badge">⏳ Approval Needed</span>
+            <h1>PT SIIX ELECTRONICS INDONESIA</h1>
+            <span class="pending-badge">Approval Needed</span>
         </div>
         
         <div class="content">
@@ -152,14 +152,14 @@
             </div>
             
             <center>
-                <a href="{{ url('/purchase-request/' . $pr->id_pr) }}" class="btn-action">
+                <a href="{{ url('/pr-detail/' . $pr->id_pr) }}" class="btn-action">
                     View Purchase Request
                 </a>
             </center>
         </div>
         
         <div class="footer">
-            <p>This is an automated email from PT Infinity Purchase Request System.<br>
+            <p>This is an automated email from PT SIIX ELECTRONICS INDONESIA.<br>
             Please do not reply to this email.</p>
         </div>
     </div>

@@ -99,11 +99,11 @@
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>PT Infinity</h1>
+            <h1>PT SIIX ELECTRONICS INDONESIA</h1>
             @if($isFinalApproval)
-                <span class="approved-badge">🎉 Fully Approved</span>
+                <span class="approved-badge">Fully Approved</span>
             @else
-                <span class="approved-badge">✓ Approved</span>
+                <span class="approved-badge">Approved</span>
             @endif
         </div>
         
@@ -158,7 +158,7 @@
         </div>
         
         <div class="footer">
-            <p>This is an automated email from PT Infinity Purchase Request System.<br>
+            <p>This is an automated email from PT SIIX ELECTRONICS INDONESIA.<br>
             Please do not reply to this email.</p>
         </div>
     </div>

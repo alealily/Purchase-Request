@@ -102,8 +102,8 @@
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>PT Infinity</h1>
-            <span class="rejected-badge">✗ Request Rejected</span>
+            <h1>PT SIIX ELECTRONICS INDONESIA</h1>
+            <span class="rejected-badge">Request Rejected</span>
         </div>
         
         <div class="content">
@@ -152,7 +152,7 @@
         </div>
         
         <div class="footer">
-            <p>This is an automated email from PT Infinity Purchase Request System.<br>
+            <p>This is an automated email from PT SIIX ELECTRONICS INDONESIA.<br>
             Please do not reply to this email.</p>
         </div>
     </div>
