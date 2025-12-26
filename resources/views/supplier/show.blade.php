@@ -54,17 +54,17 @@
                 </div>
             </div>
 
-            {{-- Actions --}}
-            <div class="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
-                <a href="{{ route('supplier_management.index') }}"
-                    class="px-6 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 font-semibold transition">
-                    Back to List
-                </a>
-                <a href="{{ route('supplier_management.edit', $supplier->id_supplier) }}"
-                    class="px-6 py-2 bg-[#187FC4] text-white rounded-lg font-semibold hover:bg-[#156ca7] transition">
-                    Edit Supplier
-                </a>
-            </div>
+                {{-- Buttons --}}
+                <div class="flex justify-start gap-4 mt-8 pt-6 border-t border-gray-200">
+                    <a href="{{ route('supplier_management.index') }}"
+                        class="px-6 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 font-semibold">
+                        <i class="fa-solid fa-arrow-left mr-2"></i>Back to List
+                    </a>
+                    <a href="{{ route('supplier_management.edit', $supplier->id_supplier) }}"
+                        class="px-6 py-2 bg-[#187FC4] text-white rounded-lg hover:bg-[#156ca7] font-semibold">
+                        <i class="fa-solid fa-pen-to-square mr-2"></i>Edit Supplier
+                    </a>
+                </div>
         </div>
     </div>
 </div>

@@ -57,19 +57,19 @@
 
                 <!-- Table -->
                 <div class="max-w-full overflow-x-auto rounded-lg border border-gray-200">
-                    <table class="min-w-[1300px] w-full text-sm text-black">
+                    <table class="w-full text-sm text-black">
                         <thead class="bg-gray-100 text-black">
                             <tr class="text-left">
-                                <th class="px-4 py-4">PR Number</th>
-                                <th class="px-4 py-4">Status PR</th>
-                                <th class="px-4 py-4">Material Description</th>
-                                <th class="px-4 py-4">Quantity</th>
-                                <th class="px-4 py-4">Unit Price</th>
-                                <th class="px-4 py-4">Amount</th>
-                                <th class="px-4 py-4">Datetime</th>
-                                <th class="px-4 py-4">User</th>
-                                <th class="px-4 py-4">Department</th>
-                                <th class="px-4 py-4">Division</th>
+                                <th class="px-4 py-4 whitespace-nowrap">PR Number</th>
+                                <th class="px-4 py-4 whitespace-nowrap">Status PR</th>
+                                <th class="px-4 py-4 whitespace-nowrap">Material Description</th>
+                                <th class="px-4 py-4 whitespace-nowrap">Quantity</th>
+                                <th class="px-4 py-4 whitespace-nowrap">Unit Price</th>
+                                <th class="px-4 py-4 whitespace-nowrap">Amount</th>
+                                <th class="px-4 py-4 whitespace-nowrap">Datetime</th>
+                                <th class="px-4 py-4 whitespace-nowrap">User</th>
+                                <th class="px-4 py-4 max-w-[120px]">Department</th>
+                                <th class="px-4 py-4 whitespace-nowrap">Division</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -101,8 +101,8 @@
                                     <td class="px-4 py-4">Rp{{ number_format($detail->total_cost ?? 0, 0, ',', '.') }}</td>
                                     <td class="px-4 py-4">{{ $pr->created_at ? $pr->created_at->format('d M Y, H:i') : '-' }}</td>
                                     <td class="px-4 py-4">{{ $pr->user->name ?? '-' }}</td>
-                                    <td class="px-4 py-4">{{ $pr->user->department ?? '-' }}</td>
-                                    <td class="px-4 py-4">{{ $pr->user->division ?? '-' }}</td>
+                                    <td class="px-4 py-4 max-w-[120px]">{{ $pr->user->department ?? '-' }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap">{{ $pr->user->division ?? '-' }}</td>
                                 </tr>
                             @empty
                                 <tr>

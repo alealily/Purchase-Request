@@ -61,6 +61,23 @@ class User extends Authenticatable
     }
 
     /**
+     * Accessor for department - Always display "IT" in uppercase
+     */
+    public function getDepartmentAttribute($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        
+        // Convert "It", "it", "iT" to "IT"
+        if (strtolower($value) === 'it') {
+            return 'IT';
+        }
+        
+        return $value;
+    }
+
+    /**
      * RBAC Helper Methods - Role Based
      */
     public function isEmployee(): bool
